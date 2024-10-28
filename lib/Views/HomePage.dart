@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
+import 'package:travel_app/Views/AddItinerary.dart';
 import 'package:travel_app/Views/AddMarker.dart';
 import 'package:travel_app/Views/LeftMenu.dart';
 import 'package:travel_app/Views/Profile.dart';
@@ -388,7 +389,14 @@ class _HomePageState extends State<HomePage> {
                                       Border.all(color: Colors.blue, width: 2),
                                   color: Colors.black87),
                               child: InkWell(
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddItinerary(),
+                                    ),
+                                  );
+                                },
                                 child: Icon(
                                   Icons.add,
                                   color: Colors.white,
