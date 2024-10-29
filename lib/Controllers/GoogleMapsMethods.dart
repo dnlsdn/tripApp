@@ -588,4 +588,121 @@ class GoogleMapsMethods {
   double _degToRad(double degree) {
     return degree * pi / 180;
   }
+
+  Future<void> addPolylineToFirestore(
+      List<LatLng> stops, String title, String description) async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    String uid = user!.uid;
+    CollectionReference markers =
+        FirebaseFirestore.instance.collection('polylines');
+
+    List<Map<String, double>> stopsMap = stops
+        .map((stop) => {'latitude': stop.latitude, 'longitude': stop.longitude})
+        .toList();
+
+    return markers
+        .add({
+          'stops': stopsMap,
+          'title': title,
+          'mittente': uid,
+          'description': description,
+          'id': generateFirestoreId(20),
+        })
+        .then((value) => print("Polyline Added"))
+        .catchError((error) => print("Failed to add polyline: $error"));
+  }
+
+  Future<void> loadPolylinesFromFirestore(Set<Polyline> polylines) async {
+    CollectionReference polylinesCollection =
+        FirebaseFirestore.instance.collection('polylines');
+
+    QuerySnapshot querySnapshot = await polylinesCollection.get();
+    Set<Polyline> tempPolylines = {};
+
+    for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+      List<dynamic> stopsJson = doc['stops'];
+
+      List<LatLng> polylinePoints = stopsJson.map((stop) {
+        double lat = stop['latitude'];
+        double lng = stop['longitude'];
+        return LatLng(lat, lng);
+      }).toList();
+
+      Polyline polyline = Polyline(
+        polylineId: PolylineId(doc.id),
+        points: polylinePoints,
+        color: getRandomColor(),
+        width: 5,
+      );
+
+      tempPolylines.add(polyline);
+    }
+
+    setState(() {
+      polylines.addAll(tempPolylines);
+    });
+  }
+
+  Color getRandomColor() {
+    Random random = Random();
+    return Color.fromARGB(
+      255,
+      random.nextInt(256),
+      random.nextInt(256),
+      random.nextInt(256),
+    );
+  }
+
+  // Funzione per determinare se un punto è vicino a una polilinea
+  bool isPointNearPolyline(LatLng point, List<LatLng> polylinePoints) {
+    const double tolerance =
+        0.0005; // Tolleranza per considerare un punto "vicino"
+    for (var i = 0; i < polylinePoints.length - 1; i++) {
+      var start = polylinePoints[i];
+      var end = polylinePoints[i + 1];
+      if (_isPointOnSegment(point, start, end, tolerance)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+// Funzione per controllare se un punto è su un segmento di polilinea
+  bool _isPointOnSegment(
+      LatLng point, LatLng start, LatLng end, double tolerance) {
+    double distance = _distanceFromPointToSegment(point, start, end);
+    return distance < tolerance;
+  }
+
+// Funzione per calcolare la distanza dal punto a un segmento
+  double _distanceFromPointToSegment(LatLng point, LatLng start, LatLng end) {
+    // Calcola la distanza tra il punto e il segmento
+    // Implementa la formula per la distanza punto-segmento qui
+    // Puoi usare la formula di distanza di punto a segmento su coordinate geografiche
+    // Questa è solo una rappresentazione generale
+    double distance = 0.0;
+    // Calcolo della distanza qui...
+    return distance;
+  }
+
+  Future<Map<String, dynamic>?> getPolylineDetails(String polylineId) async {
+    try {
+      // Recupera i dettagli del marker dalla collezione 'markers'
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('polylines')
+          .doc(polylineId)
+          .get();
+
+      if (doc.exists) {
+        return doc.data() as Map<String, dynamic>?;
+      } else {
+        print('Polyline not found');
+        return null;
+      }
+    } catch (e) {
+      print('Errore nel recupero dei dettagli del polyline: $e');
+      return null;
+    }
+  }
 }

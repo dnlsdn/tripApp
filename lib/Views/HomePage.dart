@@ -49,6 +49,10 @@ class _HomePageState extends State<HomePage> {
   double rotationAngle = 0;
   MapType mapType = MapType.normal;
   List<String> excludeMarker = [];
+  Set<Polyline> polylines = {}; // Set di polilinee per la mappa
+  bool showPolylineDetails = false;
+  Polyline? selectedPolylineDetails;
+  Map<String, Map<String, dynamic>> polylineDetails = {};
 
   @override
   void initState() {
@@ -64,6 +68,8 @@ class _HomePageState extends State<HomePage> {
         showPlacesList = searchController.text.isNotEmpty;
       });
     });
+    googleMapsMethods.loadPolylinesFromFirestore(polylines);
+    print(polylines);
   }
 
   // Future<void> _loadMarkers() async {
@@ -241,6 +247,43 @@ class _HomePageState extends State<HomePage> {
                       mapType: mapType,
                       onTap: (position) {
                         customInfoWindowController.hideInfoWindow!();
+                        for (var polyline in polylines) {
+                          if (googleMapsMethods.isPointNearPolyline(
+                              position, polyline.points)) {
+                            // Se l'utente ha toccato una polilinea, mostra le informazioni
+                            setState(() {
+                              selectedPolylineDetails =
+                                  polyline; // Salva le informazioni della polilinea
+                            });
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return Container(
+                                  height: 800,
+                                  width: double.infinity,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        height: 18,
+                                      ),
+                                      Text(
+                                          'Polyline ID: ${selectedPolylineDetails?.polylineId.value}'),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                            // Mostra la finestra informativa
+                            // customInfoWindowController.addInfoWindow!(
+                            //   // Qui puoi personalizzare il contenuto della finestra
+                            //   Text('Polyline ID: ${polyline.polylineId.value}'),
+                            //   position,
+                            // );
+                            return;
+                          }
+                        }
                       },
                       onCameraMove: (position) {
                         customInfoWindowController.hideInfoWindow!();
@@ -253,6 +296,7 @@ class _HomePageState extends State<HomePage> {
                         googleMapsMethods.getCurrentLocation(
                             currentPosition, mapController!);
                       },
+                      polylines: polylines,
                     ),
                     CustomInfoWindow(
                       controller: customInfoWindowController,
@@ -282,6 +326,8 @@ class _HomePageState extends State<HomePage> {
                             });
                             googleMapsMethods.loadDataTapMarker(markers,
                                 locations, context, null, excludeMarker);
+                            googleMapsMethods
+                                .loadPolylinesFromFirestore(polylines);
                           },
                         ),
                       ),
