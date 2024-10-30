@@ -9,6 +9,7 @@ import 'package:travel_app/Controllers/UserProvider.dart';
 import 'package:travel_app/Views/AddItinerary.dart';
 import 'package:travel_app/Views/AddMarker.dart';
 import 'package:travel_app/Views/LeftMenu.dart';
+import 'package:travel_app/Views/DetailsPolyline.dart';
 import 'package:travel_app/Views/Profile.dart';
 import 'package:travel_app/Views/RIghtMenu.dart';
 import 'package:travel_app/Views/SignUpLogIn.dart';
@@ -53,6 +54,7 @@ class _HomePageState extends State<HomePage> {
   bool showPolylineDetails = false;
   Polyline? selectedPolylineDetails;
   Map<String, Map<String, dynamic>> polylineDetails = {};
+  List<String> excludeItinerary = [];
 
   @override
   void initState() {
@@ -68,8 +70,8 @@ class _HomePageState extends State<HomePage> {
         showPlacesList = searchController.text.isNotEmpty;
       });
     });
-    googleMapsMethods.loadPolylinesFromFirestore(polylines);
-    print(polylines);
+    googleMapsMethods.loadPolylinesFromFirestore(
+        polylines, markers, context, excludeItinerary);
   }
 
   // Future<void> _loadMarkers() async {
@@ -119,6 +121,14 @@ class _HomePageState extends State<HomePage> {
             excludeMarker = newExcludeMarker;
             googleMapsMethods.loadDataTapMarker(
                 markers, locations, context, null, excludeMarker);
+          });
+        },
+        excludeItinerary: excludeItinerary,
+        onExcludeItineraryChanged: (newExcludeItinerary) {
+          setState(() {
+            excludeMarker = newExcludeItinerary;
+            googleMapsMethods.loadPolylinesFromFirestore(
+                polylines, markers, context, excludeItinerary);
           });
         },
       ),
@@ -245,44 +255,40 @@ class _HomePageState extends State<HomePage> {
                       rotateGesturesEnabled: false,
                       markers: markers,
                       mapType: mapType,
-                      onTap: (position) {
+                      onTap: (position) async {
                         customInfoWindowController.hideInfoWindow!();
+                        Polyline? tappedPolyline;
+
                         for (var polyline in polylines) {
-                          if (googleMapsMethods.isPointNearPolyline(
-                              position, polyline.points)) {
-                            // Se l'utente ha toccato una polilinea, mostra le informazioni
-                            setState(() {
-                              selectedPolylineDetails =
-                                  polyline; // Salva le informazioni della polilinea
-                            });
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return Container(
-                                  height: 800,
-                                  width: double.infinity,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        height: 18,
-                                      ),
-                                      Text(
-                                          'Polyline ID: ${selectedPolylineDetails?.polylineId.value}'),
-                                    ],
-                                  ),
-                                );
-                              },
-                            );
-                            // Mostra la finestra informativa
-                            // customInfoWindowController.addInfoWindow!(
-                            //   // Qui puoi personalizzare il contenuto della finestra
-                            //   Text('Polyline ID: ${polyline.polylineId.value}'),
-                            //   position,
-                            // );
-                            return;
+                          if (googleMapsMethods.isNearPolyline(
+                              position, polyline)) {
+                            tappedPolyline = polyline;
+                            final regex = RegExp(r'\((.*?)\)');
+                            final match = regex.firstMatch(
+                                tappedPolyline.polylineId.toString());
+                            String polylineId = match?.group(1) ?? '';
+                            Map<String, dynamic> mapPolyline =
+                                await googleMapsMethods
+                                    .getPolylineDetails(polylineId);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => DetailsPolyline(
+                                          details: mapPolyline,
+                                        )));
+                            break;
                           }
+                        }
+
+                        if (tappedPolyline != null) {
+                          setState(() {
+                            selectedPolylineDetails = tappedPolyline;
+                            showPolylineDetails = true;
+                          });
+                        } else {
+                          setState(() {
+                            showPolylineDetails = false;
+                          });
                         }
                       },
                       onCameraMove: (position) {
@@ -326,8 +332,12 @@ class _HomePageState extends State<HomePage> {
                             });
                             googleMapsMethods.loadDataTapMarker(markers,
                                 locations, context, null, excludeMarker);
-                            googleMapsMethods
-                                .loadPolylinesFromFirestore(polylines);
+                            googleMapsMethods.loadPolylinesFromFirestore(
+                              polylines,
+                              markers,
+                              context,
+                              excludeItinerary,
+                            );
                           },
                         ),
                       ),

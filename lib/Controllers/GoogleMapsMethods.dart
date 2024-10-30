@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -12,6 +13,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:travel_app/Views/DetailsMarker.dart';
+import 'package:travel_app/Views/DetailsPolyline.dart';
 import 'package:uuid/uuid.dart';
 
 class GoogleMapsMethods {
@@ -590,59 +592,69 @@ class GoogleMapsMethods {
   }
 
   Future<void> addPolylineToFirestore(
-      List<LatLng> stops, String title, String description) async {
+      List<LatLng> stops,
+      String title,
+      String description,
+      List<String> addresses,
+      DateTime lastDay,
+      DateTime firstDay,
+      String mode) async {
     User? user = FirebaseAuth.instance.currentUser;
 
     String uid = user!.uid;
-    CollectionReference markers =
+    CollectionReference polylines =
         FirebaseFirestore.instance.collection('polylines');
 
     List<Map<String, double>> stopsMap = stops
         .map((stop) => {'latitude': stop.latitude, 'longitude': stop.longitude})
         .toList();
 
-    return markers
+    return polylines
         .add({
           'stops': stopsMap,
           'title': title,
           'mittente': uid,
           'description': description,
           'id': generateFirestoreId(20),
+          'addresses': addresses,
+          'lastDay': lastDay,
+          'firstDay': firstDay,
+          'mode': mode,
         })
         .then((value) => print("Polyline Added"))
         .catchError((error) => print("Failed to add polyline: $error"));
   }
 
-  Future<void> loadPolylinesFromFirestore(Set<Polyline> polylines) async {
-    CollectionReference polylinesCollection =
-        FirebaseFirestore.instance.collection('polylines');
+  // Future<void> loadPolylinesFromFirestore(Set<Polyline> polylines) async {
+  //   CollectionReference polylinesCollection =
+  //       FirebaseFirestore.instance.collection('polylines');
 
-    QuerySnapshot querySnapshot = await polylinesCollection.get();
-    Set<Polyline> tempPolylines = {};
+  //   QuerySnapshot querySnapshot = await polylinesCollection.get();
+  //   Set<Polyline> tempPolylines = {};
 
-    for (QueryDocumentSnapshot doc in querySnapshot.docs) {
-      List<dynamic> stopsJson = doc['stops'];
+  //   for (QueryDocumentSnapshot doc in querySnapshot.docs) {
+  //     List<dynamic> stopsJson = doc['stops'];
 
-      List<LatLng> polylinePoints = stopsJson.map((stop) {
-        double lat = stop['latitude'];
-        double lng = stop['longitude'];
-        return LatLng(lat, lng);
-      }).toList();
+  //     List<LatLng> polylinePoints = stopsJson.map((stop) {
+  //       double lat = stop['latitude'];
+  //       double lng = stop['longitude'];
+  //       return LatLng(lat, lng);
+  //     }).toList();
 
-      Polyline polyline = Polyline(
-        polylineId: PolylineId(doc.id),
-        points: polylinePoints,
-        color: getRandomColor(),
-        width: 5,
-      );
+  //     Polyline polyline = Polyline(
+  //       polylineId: PolylineId(doc.id),
+  //       points: polylinePoints,
+  //       color: getRandomColor(),
+  //       width: 5,
+  //     );
 
-      tempPolylines.add(polyline);
-    }
+  //     tempPolylines.add(polyline);
+  //   }
 
-    setState(() {
-      polylines.addAll(tempPolylines);
-    });
-  }
+  //   setState(() {
+  //     polylines.addAll(tempPolylines);
+  //   });
+  // }
 
   Color getRandomColor() {
     Random random = Random();
@@ -654,55 +666,162 @@ class GoogleMapsMethods {
     );
   }
 
-  // Funzione per determinare se un punto è vicino a una polilinea
-  bool isPointNearPolyline(LatLng point, List<LatLng> polylinePoints) {
-    const double tolerance =
-        0.0005; // Tolleranza per considerare un punto "vicino"
-    for (var i = 0; i < polylinePoints.length - 1; i++) {
-      var start = polylinePoints[i];
-      var end = polylinePoints[i + 1];
-      if (_isPointOnSegment(point, start, end, tolerance)) {
+  // In GoogleMapsMethods class, add these methods:
+
+  Future<Map<String, dynamic>> getPolylineDetails(String polylineId) async {
+    try {
+      var querySnapshot = await FirebaseFirestore.instance
+          .collection('polylines')
+          .where('id', isEqualTo: polylineId)
+          .get();
+
+      print(querySnapshot.docs);
+
+      if (querySnapshot.docs.isNotEmpty) {
+        print('qui');
+        return querySnapshot.docs.first.data() as Map<String, dynamic>;
+      }
+
+      return <String, dynamic>{};
+    } catch (e) {
+      print('Error fetching polyline details: $e');
+      return <String, dynamic>{};
+    }
+  }
+
+  Future<void> loadPolylinesFromFirestore(
+      Set<Polyline> polylines,
+      Set<Marker> markers,
+      BuildContext context,
+      List<String> excludeItinerary) async {
+    try {
+      CollectionReference polylinesCollection =
+          FirebaseFirestore.instance.collection('polylines');
+
+      // Filtro per caricare solo le polylines con lastDay maggiore della data attuale
+      DateTime today = DateTime.now();
+      QuerySnapshot? querySnapshot;
+      User? user = FirebaseAuth.instance.currentUser;
+
+      String uid = user!.uid;
+      if (excludeItinerary.isEmpty) {
+        querySnapshot = await polylinesCollection
+            .where('lastDay', isGreaterThan: today)
+            .get();
+      } else if (excludeItinerary.contains('mineOnly')) {
+        querySnapshot = await polylinesCollection
+            .where('lastDay', isGreaterThan: today)
+            .where('mittente', isEqualTo: uid)
+            .get();
+      } else if (excludeItinerary.contains('all')) {
+        querySnapshot = await polylinesCollection.get();
+      }
+
+      Set<Polyline> tempPolylines = {};
+      Set<Marker> tempMarkers = {}; // Set temporaneo per i marker
+
+      for (QueryDocumentSnapshot doc in querySnapshot!.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        List<dynamic> stopsJson = data['stops'];
+        String polylineId = data['id'];
+
+        List<LatLng> polylinePoints = stopsJson.map((stop) {
+          return LatLng(
+            stop['latitude'].toDouble(),
+            stop['longitude'].toDouble(),
+          );
+        }).toList();
+
+        // Crea una polyline con i punti caricati
+        Polyline polyline = Polyline(
+          polylineId: PolylineId(polylineId),
+          points: polylinePoints,
+          color: getRandomColor(),
+          width: 5,
+          onTap: () async {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailsPolyline(details: data),
+              ),
+            );
+          },
+        );
+
+        // Aggiungi la polyline al set temporaneo
+        tempPolylines.add(polyline);
+
+        // Crea un marker per ogni punto nella polyline
+        for (var i = 0; i < polylinePoints.length; i++) {
+          LatLng point = polylinePoints[i];
+          Marker marker = Marker(
+            markerId: MarkerId('$polylineId-$i'),
+            position: point,
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => DetailsPolyline(
+                            details: data,
+                          )));
+            },
+          );
+          tempMarkers.add(marker);
+        }
+      }
+
+      setState(() {
+        polylines.clear();
+        polylines.addAll(tempPolylines);
+
+        markers.clear();
+        markers.addAll(tempMarkers); // Aggiorna i marker sulla mappa
+      });
+    } catch (e) {
+      print('Error loading polylines: $e');
+    }
+  }
+
+  // Funzione per verificare se il tocco è vicino a una polyline
+  bool isNearPolyline(LatLng tapPosition, Polyline polyline) {
+    for (var point in polyline.points) {
+      double distance = calculateDistance(tapPosition, point);
+      if (distance < 0.001) {
+        // Soglia di distanza in gradi, circa 100 metri
         return true;
       }
     }
     return false;
   }
 
-// Funzione per controllare se un punto è su un segmento di polilinea
-  bool _isPointOnSegment(
-      LatLng point, LatLng start, LatLng end, double tolerance) {
-    double distance = _distanceFromPointToSegment(point, start, end);
-    return distance < tolerance;
+  double calculateDistance(LatLng start, LatLng end) {
+    var dx = start.latitude - end.latitude;
+    var dy = start.longitude - end.longitude;
+    return sqrt(dx * dx + dy * dy);
   }
 
-// Funzione per calcolare la distanza dal punto a un segmento
-  double _distanceFromPointToSegment(LatLng point, LatLng start, LatLng end) {
-    // Calcola la distanza tra il punto e il segmento
-    // Implementa la formula per la distanza punto-segmento qui
-    // Puoi usare la formula di distanza di punto a segmento su coordinate geografiche
-    // Questa è solo una rappresentazione generale
-    double distance = 0.0;
-    // Calcolo della distanza qui...
-    return distance;
-  }
+  Future<String> getStopsAddresses(List<dynamic> stops) async {
+    List<String> addresses = [];
 
-  Future<Map<String, dynamic>?> getPolylineDetails(String polylineId) async {
-    try {
-      // Recupera i dettagli del marker dalla collezione 'markers'
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection('polylines')
-          .doc(polylineId)
-          .get();
+    for (var stop in stops) {
+      String address = await getAddressFromLatLng(
+        stop['latitude']?.toString(),
+        stop['longitude']?.toString(),
+      );
+      addresses.add(address);
 
-      if (doc.exists) {
-        return doc.data() as Map<String, dynamic>?;
-      } else {
-        print('Polyline not found');
-        return null;
-      }
-    } catch (e) {
-      print('Errore nel recupero dei dettagli del polyline: $e');
-      return null;
+      await Future.delayed(Duration(minutes: 1));
     }
+
+    return addresses.join('\n\n→\n\n');
+  }
+
+  bool isCloseToMarker(LatLng touchPosition, LatLng markerPosition) {
+    const double proximityThreshold =
+        0.001; // Soglia per la distanza (es. 0.001 gradi)
+    return (touchPosition.latitude - markerPosition.latitude).abs() <
+            proximityThreshold &&
+        (touchPosition.longitude - markerPosition.longitude).abs() <
+            proximityThreshold;
   }
 }

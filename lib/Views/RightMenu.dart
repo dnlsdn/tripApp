@@ -9,6 +9,8 @@ class RightMenu extends StatefulWidget {
   final Function(MapType) onMapTypeChanged;
   List<String> excludeMarker = [];
   final Function(List<String>) onExcludeMarkerChanged;
+  List<String> excludeItinerary = [];
+  final Function(List<String>) onExcludeItineraryChanged;
 
   RightMenu({
     super.key,
@@ -16,6 +18,8 @@ class RightMenu extends StatefulWidget {
     required this.onMapTypeChanged,
     required this.excludeMarker,
     required this.onExcludeMarkerChanged,
+    required this.excludeItinerary,
+    required this.onExcludeItineraryChanged,
   });
 
   @override
@@ -64,6 +68,12 @@ class _RightMenuState extends State<RightMenu> {
       'warning'
     ];
 
+    List<String> filterItineraryList = [
+      'See Present and Future Itineraries',
+      'See Only Your Itineraries',
+      'See All',
+    ];
+
     void toggleList() {
       setState(() {
         showFilterList =
@@ -71,12 +81,12 @@ class _RightMenuState extends State<RightMenu> {
       });
     }
 
-    void showPopupWithList(BuildContext context) {
+    void showPopupWithListMarkers(BuildContext context) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Filter"),
+            title: Text("Filter Markers"),
             content: Container(
               width: double.maxFinite,
               child: ListView.builder(
@@ -110,7 +120,59 @@ class _RightMenuState extends State<RightMenu> {
                   Navigator.of(context).pop();
                 },
                 child: Text(
-                  "Chiudi",
+                  "Close",
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void showPopupWithListItineraries(BuildContext context) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Filter Itineraries"),
+            content: Container(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true, // Ridimensiona in base agli elementi
+                itemCount: filterItineraryList.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    leading: Icon(Icons.mode_standby),
+                    title: Text(filterItineraryList[index]),
+                    onTap: () {
+                      widget.excludeItinerary.clear();
+                      if (filterItineraryList[index] ==
+                          'See Present and Future Itineraries') {
+                      } else if (filterItineraryList[index] ==
+                          'See Only Your Itineraries') {
+                        widget.excludeItinerary.add('mineOnly');
+                      } else if (filterItineraryList[index] == 'See All') {
+                        widget.excludeItinerary.add('all');
+                      }
+
+                      widget.onExcludeItineraryChanged(
+                          List.from(widget.excludeItinerary));
+                      Navigator.of(context).pop();
+                    },
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  "Close",
                   style: TextStyle(
                     color: Colors.white,
                   ),
@@ -202,9 +264,16 @@ class _RightMenuState extends State<RightMenu> {
           ),
           buildMenuItem(
             icon: Icons.filter_alt_off,
-            text: 'Filter',
+            text: 'Filter Markers',
             onTap: () {
-              showPopupWithList(context);
+              showPopupWithListMarkers(context);
+            },
+          ),
+          buildMenuItem(
+            icon: Icons.filter_alt_off,
+            text: 'Filter Itineraries',
+            onTap: () {
+              showPopupWithListItineraries(context);
             },
           ),
         ],

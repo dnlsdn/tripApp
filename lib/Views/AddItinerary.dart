@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
+import 'package:travel_app/Views/LeftMenu.dart';
 
 class AddItinerary extends StatefulWidget {
   const AddItinerary({super.key});
@@ -25,6 +26,9 @@ class _AddItineraryState extends State<AddItinerary> {
   bool showPlacesList = false;
   String address = "";
   List<LatLng> stops = [];
+  List<String> addresses = [];
+  String mode = "";
+  IconData modeIcon = Icons.mode_standby;
 
   @override
   void initState() {
@@ -128,6 +132,10 @@ class _AddItineraryState extends State<AddItinerary> {
             stops: stops,
             title: titleController.text,
             description: descriptionController.text,
+            addresses: addresses,
+            lastDay: endDate!,
+            firstDay: startDate!,
+            mode: mode,
           ),
         ),
       );
@@ -376,6 +384,87 @@ class _AddItineraryState extends State<AddItinerary> {
                           ),
                         ),
                       ),
+                    SizedBox(
+                      height: 18,
+                    ),
+                    if (!showPlacesList)
+                      Text('Mode',
+                          style: TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    if (!showPlacesList)
+                      Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: buildMenuItem(
+                            icon: modeIcon,
+                            text: mode.isNotEmpty ? mode : 'Select Mode Type',
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Select Mode Type'),
+                                    content: DropdownButton<String>(
+                                      focusColor: Colors.transparent,
+                                      value: mode.isNotEmpty ? mode : null,
+                                      onChanged: (String? newValue) {
+                                        setState(() {
+                                          mode = newValue!;
+                                        });
+                                        Navigator.of(context).pop();
+                                      },
+                                      items: <DropdownMenuItem<String>>[
+                                        DropdownMenuItem(
+                                          value: 'Foot',
+                                          child: Text('Foot'),
+                                          onTap: () {
+                                            mode = 'foot';
+                                            modeIcon = Icons.hiking;
+                                          },
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'Cycle',
+                                          child: Text('Cycle'),
+                                          onTap: () {
+                                            mode = 'cycle';
+                                            modeIcon = Icons.directions_bike;
+                                          },
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'Car',
+                                          child: Text('Car'),
+                                          onTap: () {
+                                            mode = 'car';
+                                            modeIcon = Icons.directions_car;
+                                          },
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'Moto',
+                                          child: Text('Moto'),
+                                          onTap: () {
+                                            mode = 'moto';
+                                            modeIcon = Icons.motorcycle;
+                                          },
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'Hybrid',
+                                          child: Text('Hybrid'),
+                                          onTap: () {
+                                            mode = 'hybrid';
+                                            modeIcon = Icons.mode_standby;
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            }),
+                      ),
                     if (alertEmpty)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -404,12 +493,14 @@ class _AddItineraryState extends State<AddItinerary> {
                           descriptionController.text != "" &&
                           startDate != null &&
                           endDate != null &&
-                          address != "") {
+                          address != "" &&
+                          mode != "") {
                         Map<String, dynamic> addressLatLng =
                             await googleMapsMethods
                                 .getLatLngFromAddress(address);
                         stops.add(
                             LatLng(addressLatLng['lat'], addressLatLng['lng']));
+                        addresses.add(address);
                         navigateToDay(currentDay);
                       } else {
                         print('no');
@@ -431,7 +522,8 @@ class _AddItineraryState extends State<AddItinerary> {
                             descriptionController.text != "" &&
                             startDate != null &&
                             endDate != null &&
-                            address != ""
+                            address != "" &&
+                            mode != ""
                         ? Colors.blue
                         : Colors.white.withOpacity(0.7),
                     width: 2,
@@ -446,7 +538,8 @@ class _AddItineraryState extends State<AddItinerary> {
                               descriptionController.text != "" &&
                               startDate != null &&
                               endDate != null &&
-                              address != ""
+                              address != "" &&
+                              mode != ""
                           ? Colors.white
                           : Colors.white.withOpacity(0.7),
                       fontWeight: FontWeight.bold),
@@ -465,6 +558,10 @@ class DayScreen extends StatefulWidget {
   final List<LatLng> stops;
   final String title;
   final String description;
+  final List<String> addresses;
+  final DateTime lastDay;
+  final DateTime firstDay;
+  final String mode;
 
   const DayScreen({
     required this.date,
@@ -474,6 +571,10 @@ class DayScreen extends StatefulWidget {
     required this.stops,
     required this.title,
     required this.description,
+    required this.addresses,
+    required this.lastDay,
+    required this.firstDay,
+    required this.mode,
   }) : super(key: key);
 
   @override
@@ -604,11 +705,18 @@ class _DayScreenState extends State<DayScreen> {
                 await googleMapsMethods.getLatLngFromAddress(address);
             widget.stops
                 .add(LatLng(addressLatLng['lat'], addressLatLng['lng']));
+            widget.addresses.add(address);
             if (widget.isLastDay) {
               // Se è l'ultimo giorno, torna alla schermata principale
               print(widget.stops);
               googleMapsMethods.addPolylineToFirestore(
-                  widget.stops, widget.title, widget.description);
+                  widget.stops,
+                  widget.title,
+                  widget.description,
+                  widget.addresses,
+                  widget.lastDay,
+                  widget.firstDay,
+                  widget.mode);
               Navigator.popUntil(context, (route) => route.isFirst);
             } else {
               widget.onNext(); // Altrimenti vai al giorno successivo
