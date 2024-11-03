@@ -1,8 +1,10 @@
 import 'dart:io'; // Per File
 
+import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Per selezionare l'immagine
 import 'package:provider/provider.dart';
+import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
 import 'package:travel_app/Views/SignUpLogIn.dart';
 import 'package:travel_app/models/Utente.dart';
@@ -20,10 +22,14 @@ class _ProfileState extends State<Profile> {
   final ImagePicker _picker = ImagePicker();
   bool imageUpdated = false;
   bool errorImage = false;
+  late GoogleMapsMethods googleMapsMethods;
+  String nTravels = 'err';
 
   @override
   void initState() {
     super.initState();
+    googleMapsMethods =
+        GoogleMapsMethods(setState, CustomInfoWindowController());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = Provider.of<UserProvider>(context, listen: false).getUser;
       if (user == null) {
@@ -32,6 +38,7 @@ class _ProfileState extends State<Profile> {
         );
       }
     });
+    loadNTravels();
   }
 
   Future<void> _pickImage() async {
@@ -89,6 +96,13 @@ class _ProfileState extends State<Profile> {
         });
       });
     }
+  }
+
+  Future<void> loadNTravels() async {
+    final result = await googleMapsMethods.loadNumbersPolylines();
+    setState(() {
+      nTravels = result;
+    });
   }
 
   @override
@@ -186,6 +200,18 @@ class _ProfileState extends State<Profile> {
                 const SizedBox(width: 10),
                 Text(
                   user?.email ?? '',
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Icon(Icons.travel_explore, color: Colors.grey),
+                const SizedBox(width: 10),
+                Text(
+                  'n° Travels: $nTravels',
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold),
                 ),

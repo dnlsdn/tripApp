@@ -699,7 +699,7 @@ class GoogleMapsMethods {
           FirebaseFirestore.instance.collection('polylines');
 
       // Filtro per caricare solo le polylines con lastDay maggiore della data attuale
-      DateTime today = DateTime.now();
+      DateTime today = DateTime.now().subtract(Duration(days: 1));
       QuerySnapshot? querySnapshot;
       User? user = FirebaseAuth.instance.currentUser;
 
@@ -751,12 +751,10 @@ class GoogleMapsMethods {
         // Aggiungi la polyline al set temporaneo
         tempPolylines.add(polyline);
 
-        // Crea un marker per ogni punto nella polyline
-        for (var i = 0; i < polylinePoints.length; i++) {
-          LatLng point = polylinePoints[i];
-          Marker marker = Marker(
-            markerId: MarkerId('$polylineId-$i'),
-            position: point,
+        LatLng point0 = polylinePoints[0];
+        Marker marker0 = Marker(
+            markerId: MarkerId('$polylineId-0'),
+            position: point0,
             onTap: () {
               Navigator.push(
                   context,
@@ -764,10 +762,42 @@ class GoogleMapsMethods {
                       builder: (context) => DetailsPolyline(
                             details: data,
                           )));
-            },
-          );
-          tempMarkers.add(marker);
-        }
+            });
+
+        tempMarkers.add(marker0);
+
+        LatLng pointLast = polylinePoints[polylinePoints.length - 1];
+        Marker markerLast = Marker(
+            markerId: MarkerId('$polylineId-last'),
+            position: pointLast,
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => DetailsPolyline(
+                            details: data,
+                          )));
+            });
+
+        tempMarkers.add(markerLast);
+
+        // Crea un marker per ogni punto nella polyline
+        // for (var i = 0; i < polylinePoints.length; i++) {
+        //   LatLng point = polylinePoints[i];
+        //   Marker marker = Marker(
+        //     markerId: MarkerId('$polylineId-$i'),
+        //     position: point,
+        //     onTap: () {
+        //       Navigator.push(
+        //           context,
+        //           MaterialPageRoute(
+        //               builder: (context) => DetailsPolyline(
+        //                     details: data,
+        //                   )));
+        //     },
+        //   );
+        //   tempMarkers.add(marker);
+        // }
       }
 
       setState(() {
@@ -823,5 +853,19 @@ class GoogleMapsMethods {
             proximityThreshold &&
         (touchPosition.longitude - markerPosition.longitude).abs() <
             proximityThreshold;
+  }
+
+  Future<String> loadNumbersPolylines() async {
+    CollectionReference polylinesCollection =
+        FirebaseFirestore.instance.collection('polylines');
+
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      QuerySnapshot querySnapshot = await polylinesCollection
+          .where('mittente', isEqualTo: user.uid)
+          .get();
+      return querySnapshot.size.toString();
+    }
+    return '0';
   }
 }
