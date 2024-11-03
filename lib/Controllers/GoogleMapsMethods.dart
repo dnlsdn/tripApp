@@ -192,13 +192,17 @@ class GoogleMapsMethods {
               icon: markerIcon,
               position: markerPosition,
               onTap: () {
-                Future.delayed(const Duration(milliseconds: 500), () {
-                  _showInfoWindow(location, context);
-                });
+                if (context.findRenderObject() != null) {
+                  // Verifica che il contesto sia ancora valido
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    _showInfoWindow(location, context);
+                  });
+                }
               },
             ),
           );
         }
+        setState(() {});
       } else {
         // Calculate distance between searchLocation and the marker's position
         final markerPosition = LatLng(
@@ -244,69 +248,69 @@ class GoogleMapsMethods {
 
   Widget _buildInfoWindowContent(
       Map<String, dynamic> location, BuildContext context) {
-    return Container(
-      height: 38,
-      width: 38,
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.9),
-        border: Border.all(color: Colors.blue),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 18,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: Text(
-              location['title'] ?? 'No Title',
-              style: TextStyle(color: Colors.white, fontSize: 18),
-              maxLines: 2, // Limita il testo a una sola riga
-              overflow: TextOverflow.ellipsis, // Tronca il testo con "..."
+    return Builder(builder: (BuildContext builderContext) {
+      return Container(
+        height: 38,
+        width: 38,
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.9),
+          border: Border.all(color: Colors.blue),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 18,
             ),
-          ),
-          //Spacer(),
-          SizedBox(
-            height: 18,
-          ),
-          Container(
-            decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                border: Border.all(color: Colors.blue, width: 2),
-                borderRadius: BorderRadius.circular(8)),
-            child: ElevatedButton(
-              onPressed: () async {
-                final markerId = location['id'];
-                final markerDetails = await getMarkerDetails(markerId);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => DetailsMarker(
-                              details: markerDetails!,
-                            )));
-              },
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
               child: Text(
-                "More Details",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                ),
+                location['title'] ?? 'No Title',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+                maxLines: 2, // Limita il testo a una sola riga
+                overflow: TextOverflow.ellipsis, // Tronca il testo con "..."
               ),
-              style: ElevatedButton.styleFrom(
-                  //padding: EdgeInsets.symmetric(horizontal: 24, vertical: 2),
-                  textStyle: TextStyle(fontSize: 15),
-                  overlayColor: Colors.transparent),
             ),
-          ),
-          SizedBox(
-            height: 8,
-          ),
-        ],
-      ),
-    );
+            //Spacer(),
+            SizedBox(
+              height: 18,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  border: Border.all(color: Colors.blue, width: 2),
+                  borderRadius: BorderRadius.circular(8)),
+              child: ElevatedButton(
+                onPressed: () async {
+                  final markerId = location['id'];
+                  final markerDetails = await getMarkerDetails(markerId);
+                  Navigator.of(builderContext).push(MaterialPageRoute(
+                      builder: (context) => DetailsMarker(
+                            details: markerDetails!,
+                          )));
+                },
+                child: Text(
+                  "More Details",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                    //padding: EdgeInsets.symmetric(horizontal: 24, vertical: 2),
+                    textStyle: TextStyle(fontSize: 15),
+                    overlayColor: Colors.transparent),
+              ),
+            ),
+            SizedBox(
+              height: 8,
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   double _toDouble(dynamic value) {

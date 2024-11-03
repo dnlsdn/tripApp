@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:travel_app/Views/Contatti.dart';
+import 'package:travel_app/Views/Contacts.dart';
 import 'package:travel_app/Views/HomePage.dart';
 import 'package:travel_app/Views/Settings.dart';
 import 'package:travel_app/Views/StoricoViaggi.dart';
@@ -18,7 +18,7 @@ class BottomBarViewState extends State<BottomBar> {
     HomePage(),
     //HomeChatGPT(),
     StoricoViaggi(),
-    Contatti(),
+    Contacts(),
     Settings(),
   ];
 
@@ -59,7 +59,7 @@ class BottomBarViewState extends State<BottomBar> {
         break;
       case 0:
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => Contatti()),
+          MaterialPageRoute(builder: (context) => Contacts()),
         );
         break;
       case 1:

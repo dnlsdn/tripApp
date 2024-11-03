@@ -268,7 +268,21 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
                 itemBuilder: (context, index) {
                   return ListTile(
                     leading: Icon(Icons.power_input),
-                    title: Text(widget.details['addresses'][index]),
+                    title: Column(
+                      children: [
+                        Text(widget.details['addresses'][index]),
+                        if (index != 0)
+                          Container(
+                            width: double.infinity,
+                            child: Text(
+                              textAlign: TextAlign.end,
+                              DateFormat('dd/MM/yyyy').format(
+                                  firstDay.add(Duration(days: index - 1))),
+                            ),
+                          ),
+                        Divider(),
+                      ],
+                    ),
                   );
                 },
               ),

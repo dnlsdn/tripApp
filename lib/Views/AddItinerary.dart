@@ -474,6 +474,9 @@ class _AddItineraryState extends State<AddItinerary> {
                           style: TextStyle(fontSize: 22, color: Colors.red),
                         )),
                       ),
+                    SizedBox(
+                      height: 68,
+                    ),
                   ],
                 ),
               ),
@@ -608,6 +611,19 @@ class _DayScreenState extends State<DayScreen> {
       appBar: AppBar(
         title:
             Text('Travel Day: ' + DateFormat('dd/MM/yyyy').format(widget.date)),
+        leading: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.blue, width: 2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: IconButton(
+            highlightColor: Colors.transparent,
+            onPressed: () =>
+                Navigator.popUntil(context, (route) => route.isFirst),
+            icon: const Icon(Icons.arrow_back_ios_new,
+                color: Colors.white, size: 22),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
