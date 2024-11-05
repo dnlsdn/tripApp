@@ -71,31 +71,54 @@ class _ContactsState extends State<Contacts> {
                     ],
                   ),
                   if (controller.text.isNotEmpty)
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: Container(
-                        height: MediaQuery.of(context).size.height / 2,
-                        //color: Colors.black,
-                        decoration: BoxDecoration(
-                            color: Colors.black,
-                            border: Border.all(color: Colors.black),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: suggestions.isEmpty
-                            ? Center(child: Text('Nessun suggerimento trovato'))
-                            : ListView.builder(
-                                itemCount: suggestions.length,
-                                itemBuilder: (context, index) {
-                                  return ListTile(
-                                    title: Text(suggestions[index]),
-                                    onTap: () {
-                                      controller.text = suggestions[index];
-                                      // Aggiungi logica da eseguire alla selezione del suggerimento
-                                    },
-                                  );
-                                },
-                              ),
+                    Container(
+                      color: Colors.black,
+                      height:
+                          380, // Imposta un'altezza fissa o usa Expanded se necessario
+                      child: ListView.builder(
+                        itemCount: suggestions.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            margin: EdgeInsets.symmetric(
+                                vertical: 4, horizontal: 8),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.blue, width: 2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ListTile(
+                              onTap: () async {},
+                              title: Text(
+                                  suggestions[index] ?? 'No title available'),
+                            ),
+                          );
+                        },
                       ),
                     ),
+                  // Align(
+                  //   alignment: Alignment.topCenter,
+                  //   child: Container(
+                  //     height: MediaQuery.of(context).size.height / 2,
+                  //     //color: Colors.black,
+                  //     decoration: BoxDecoration(
+                  //         color: Colors.black,
+                  //         border: Border.all(color: Colors.black),
+                  //         borderRadius: BorderRadius.circular(8)),
+                  //     child: suggestions.isEmpty
+                  //         ? Center(child: Text('Nessun suggerimento trovato'))
+                  //         : ListView.builder(
+                  //             itemCount: suggestions.length,
+                  //             itemBuilder: (context, index) {
+                  //               return ListTile(
+                  //                 title: Text(suggestions[index]),
+                  //                 onTap: () {
+                  //                   controller.text = suggestions[index];
+                  //                   // Aggiungi logica da eseguire alla selezione del suggerimento
+                  //                 },
+                  //               );
+                  //             },
+                  //           ),
+                  //   ),
+                  // ),
                 ],
               ),
             ],

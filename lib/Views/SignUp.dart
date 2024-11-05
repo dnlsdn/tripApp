@@ -44,6 +44,26 @@ class _SignUpViewState extends State<SignUp> {
       setState(() {
         isLoading = true;
       });
+
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      CollectionReference collectionRef = firestore.collection('users');
+
+      QuerySnapshot querySnapshot = await collectionRef.get();
+
+      List<dynamic> valoriParametro =
+          querySnapshot.docs.map((doc) => doc['username']).toList();
+
+      for (dynamic item in valoriParametro) {
+        if (item == usernameController.text) {
+          risultato = 'Username already used!';
+          setState(() {
+            isLoading = false;
+          });
+          return;
+        }
+      }
+
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text,
