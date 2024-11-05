@@ -1,8 +1,16 @@
+import 'dart:async';
+
 import 'package:cupertino_modal_sheet/cupertino_modal_sheet.dart';
+import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:travel_app/Controllers/GeneralMethods.dart';
+import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
+import 'package:travel_app/Controllers/UserMethods.dart';
+import 'package:travel_app/Controllers/UserProvider.dart';
 import 'package:travel_app/Utils/FullScreenImage.dart';
 import 'package:travel_app/Views/ReportUser.dart';
+import 'package:travel_app/models/Utente.dart';
 
 class Contact extends StatefulWidget {
   final Map<String, dynamic> profile;
@@ -15,16 +23,45 @@ class Contact extends StatefulWidget {
 class _ContactState extends State<Contact> {
   String image = '';
   GeneralMethods generalMethods = GeneralMethods();
+  UserMethods userMethods = UserMethods();
+  String nTravels = 'err';
+  late GoogleMapsMethods googleMapsMethods;
+  bool requestSent = false;
+  String status = '';
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     image = widget.profile['photoUrl'];
+    googleMapsMethods =
+        GoogleMapsMethods(setState, CustomInfoWindowController());
+    loadNTravels();
+    loadStatus();
+    print(status);
+  }
+
+  Future<void> loadNTravels() async {
+    final result = await googleMapsMethods.loadNumbersPolylines();
+    setState(() {
+      nTravels = result;
+    });
+  }
+
+  Future<void> loadStatus() async {
+    Utente? user = Provider.of<UserProvider>(context, listen: false).getUser;
+    if (user != null) {
+      final resultStatus = await userMethods.getFriendshipStatus(
+          user.uid, widget.profile['uid']);
+      setState(() {
+        status = resultStatus;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    Utente? user = Provider.of<UserProvider>(context).getUser;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -91,59 +128,101 @@ class _ContactState extends State<Contact> {
                 height: 18,
               ),
               Text(
-                "Name: Daniel",
+                "Username: ${widget.profile['username']}",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               Divider(
                 height: 18,
               ),
+              // Text(
+              //   "Nation: ${widget.profile['paese']}",
+              //   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              // ),
+              // Divider(
+              //   height: 18,
+              // ),
               Text(
-                "Nation: Italy",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              Divider(
-                height: 18,
-              ),
-              Text(
-                "N° Travels: 18",
+                "N° Travels: $nTravels",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  InkWell(
-                    onTap: () {},
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                          //shape: BoxShape.circle,
-                          border: Border.all(color: Colors.blue, width: 2),
-                          borderRadius: BorderRadius.circular(8)),
-                      child: const Text('Contact User'),
+              if (user!.uid != widget.profile['uid'])
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    InkWell(
+                      onTap: () {},
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                            //shape: BoxShape.circle,
+                            border: Border.all(color: Colors.blue, width: 2),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: const Text('Contact User'),
+                      ),
                     ),
-                  ),
-                  InkWell(
-                    onTap: () async {
-                      showCupertinoModalSheet(
-                        context: context,
-                        builder: (context) => const ReportUser(),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                          //shape: BoxShape.circle,
-                          border: Border.all(color: Colors.red, width: 2),
-                          borderRadius: BorderRadius.circular(8)),
-                      child: const Text('Report User'),
+                    InkWell(
+                      onTap: () async {
+                        showCupertinoModalSheet(
+                          context: context,
+                          builder: (context) => const ReportUser(),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                            //shape: BoxShape.circle,
+                            border: Border.all(color: Colors.red, width: 2),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: const Text('Report User'),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               SizedBox(
                 height: 18,
               ),
+              if (user!.uid != widget.profile['uid'])
+                InkWell(
+                  onTap: () async {
+                    userMethods.sendFriendRequest(
+                        user.uid, widget.profile['uid']);
+                    setState(() {
+                      requestSent = true;
+                    });
+                    Timer(Duration(seconds: 2), () {
+                      setState(() {
+                        requestSent = false;
+                      });
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 38.0),
+                    child: Container(
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                          //shape: BoxShape.circle,
+                          border: Border.all(color: Colors.green, width: 2),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: status == 'accepted'
+                          ? const Text('You are already Friend!')
+                          : status == 'pending'
+                              ? const Text('Request Pending')
+                              : const Text('Send Friend Request'),
+                    ),
+                  ),
+                ),
+              if (requestSent)
+                const Center(
+                  child: Text(
+                    'Request Sent',
+                    style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22),
+                  ),
+                ),
             ],
           ),
         ),
