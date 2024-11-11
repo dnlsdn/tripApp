@@ -4,11 +4,14 @@ import 'package:cupertino_modal_sheet/cupertino_modal_sheet.dart';
 import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:travel_app/Controllers/ChatMethods.dart';
 import 'package:travel_app/Controllers/GeneralMethods.dart';
 import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
 import 'package:travel_app/Controllers/UserMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
 import 'package:travel_app/Utils/FullScreenImage.dart';
+import 'package:travel_app/Views/Chat.dart';
+import 'package:travel_app/Views/MessageList.dart';
 import 'package:travel_app/Views/ReportUser.dart';
 import 'package:travel_app/models/Utente.dart';
 
@@ -28,6 +31,7 @@ class _ContactState extends State<Contact> {
   late GoogleMapsMethods googleMapsMethods;
   bool requestSent = false;
   String status = '';
+  ChatMethods chatMethods = ChatMethods();
 
   @override
   void initState() {
@@ -38,7 +42,6 @@ class _ContactState extends State<Contact> {
         GoogleMapsMethods(setState, CustomInfoWindowController());
     loadNTravels();
     loadStatus();
-    print(status);
   }
 
   Future<void> loadNTravels() async {
@@ -62,6 +65,7 @@ class _ContactState extends State<Contact> {
   @override
   Widget build(BuildContext context) {
     Utente? user = Provider.of<UserProvider>(context).getUser;
+    print('qui: ' + status);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -151,7 +155,23 @@ class _ContactState extends State<Contact> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     InkWell(
-                      onTap: () {},
+                      onTap: () async {
+                        Utente? user =
+                            Provider.of<UserProvider>(context, listen: false)
+                                .getUser;
+                        if (user != null) {
+                          final chatId = await chatMethods.startChat(
+                              user.uid, widget.profile['uid']);
+
+                          // Naviga alla schermata di chat con l'ID della chat
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Chat(chatId: chatId),
+                            ),
+                          );
+                        }
+                      },
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -182,7 +202,7 @@ class _ContactState extends State<Contact> {
               SizedBox(
                 height: 18,
               ),
-              if (user!.uid != widget.profile['uid'])
+              if (user.uid != widget.profile['uid'])
                 InkWell(
                   onTap: () async {
                     userMethods.sendFriendRequest(
@@ -208,8 +228,46 @@ class _ContactState extends State<Contact> {
                       child: status == 'accepted'
                           ? const Text('You are already Friend!')
                           : status == 'pending'
-                              ? const Text('Request Pending')
-                              : const Text('Send Friend Request'),
+                              ? Row(
+                                  children: [
+                                    const Text('Request Pending'),
+                                    Spacer(),
+                                    IconButton(
+                                      onPressed: () {
+                                        userMethods.acceptFriendRequest(
+                                            user.uid, widget.profile['uid']);
+                                        Navigator.pop(context);
+                                      },
+                                      icon: Icon(
+                                        Icons.check_circle_outline,
+                                        color: Colors.green,
+                                        size: 27,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        userMethods.deleteFriendRequest(
+                                            user.uid, widget.profile['uid']);
+                                        Navigator.pop(context);
+                                      },
+                                      icon: Icon(
+                                        Icons.cancel_outlined,
+                                        color: Colors.red,
+                                        size: 27,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : status == 'sent'
+                                  ? const Text('Friendship Sent')
+                                  : InkWell(
+                                      onTap: () {
+                                        userMethods.sendFriendRequest(
+                                            user.uid, widget.profile['uid']);
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('Send Friend Request'),
+                                    ),
                     ),
                   ),
                 ),

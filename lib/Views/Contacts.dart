@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 import 'package:travel_app/Controllers/UserMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
 import 'package:travel_app/Views/AddMarker.dart';
 import 'package:travel_app/Views/Contact.dart';
 import 'package:travel_app/Views/NewFriend.dart';
+
+import '../models/Utente.dart';
 
 class Contacts extends StatefulWidget {
   const Contacts({super.key});
@@ -35,8 +38,6 @@ class _ContactsState extends State<Contacts> {
   }
 
   void _onSearchChanged() async {
-    print(
-        'Ricerca in corso: ${controller.text}'); // Aggiungi questa linea per debug
     final _suggestions = await userMethods.getSuggestions(controller.text);
     setState(() {
       suggestions = _suggestions;
@@ -45,6 +46,7 @@ class _ContactsState extends State<Contacts> {
 
   @override
   Widget build(BuildContext context) {
+    Utente? user = Provider.of<UserProvider>(context).getUser;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -99,11 +101,19 @@ class _ContactsState extends State<Contacts> {
                         Icons.person_add,
                         color: Colors.white,
                       ),
-                      onPressed: () {
+                      onPressed: () async {
+                        print(user!.uid);
+                        List<Map<String, dynamic>> requests = await userMethods
+                            .getReceivedFriendRequests(user!.uid);
+                        print(requests);
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const NewFriend()));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NewFriend(
+                              requests: requests,
+                            ),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -120,8 +130,7 @@ class _ContactsState extends State<Contacts> {
                   if (controller.text.isNotEmpty)
                     Container(
                       color: Colors.black,
-                      height:
-                          380, // Imposta un'altezza fissa o usa Expanded se necessario
+                      height: 380,
                       child: ListView.builder(
                         itemCount: suggestions.length,
                         itemBuilder: (context, index) {
