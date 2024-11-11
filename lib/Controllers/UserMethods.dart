@@ -40,7 +40,7 @@ class UserMethods {
     await FirebaseFirestore.instance.collection('friendships').doc(docId).set({
       'mittente': currentUserId,
       'destinatario': friendUserId,
-      'status': 'sent',
+      'status': 'pending',
     });
   }
 
@@ -56,6 +56,37 @@ class UserMethods {
 
       if (docSnapshot.exists) {
         return docSnapshot.data()?['status'];
+      } else {
+        final docId = '${destinatario}_$mittente';
+
+        final docSnapshot = await FirebaseFirestore.instance
+            .collection('friendships')
+            .doc(docId)
+            .get();
+
+        if (docSnapshot.exists) {
+          return docSnapshot.data()?['status'];
+        } else {
+          return 'none';
+        }
+      }
+    } catch (e) {
+      print("Errore nel recupero dello stato di amicizia: $e");
+      return 'error';
+    }
+  }
+  Future<String> getFriendshipDestinatario(
+      String destinatario, String mittente) async {
+    try {
+      final docId = '${mittente}_$destinatario';
+
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('friendships')
+          .doc(docId)
+          .get();
+
+      if (docSnapshot.exists) {
+        return docSnapshot.data()?['destinatario'];
       } else {
         final docId = '${destinatario}_$mittente';
 

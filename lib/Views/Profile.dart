@@ -99,7 +99,7 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<void> loadNTravels() async {
-    final result = await googleMapsMethods.loadNumbersPolylines();
+    final result = await googleMapsMethods.loadNumbersPolylines(null);
     setState(() {
       nTravels = result;
     });

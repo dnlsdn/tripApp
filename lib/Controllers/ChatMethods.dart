@@ -1,24 +1,40 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:travel_app/Controllers/UserProvider.dart';
 
 class ChatMethods {
   Future<void> sendMessage(String chatId, String text) async {
     final user = FirebaseAuth.instance.currentUser;
+    UserProvider userProvider = UserProvider();
 
     if (user == null) return;
 
+    String? username = await userProvider.getUsernameById(user.uid);
+
     final message = {
       'senderId': user.uid,
-      'senderUsername': user.displayName ?? 'Anonymous',
+      'senderUsername': username,
       'text': text,
       'timestamp': FieldValue.serverTimestamp(),
+      'read': false, // Il messaggio non è stato letto
     };
 
+    // Aggiungi il messaggio alla sotto-collezione
     await FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .add(message);
+
+    // Aggiorna il documento principale della chat con i dettagli dell'ultimo messaggio
+    await FirebaseFirestore.instance.collection('chats').doc(chatId).update({
+      'lastMessage': text,
+      'lastMessageTimestamp': FieldValue.serverTimestamp(),
+      'lastMessageSenderId':
+          user.uid, // Imposta l'utente corrente come ultimo mittente
+      'lastMessageRead':
+          false, // Non letto finché l'altro utente non apre la chat
+    });
   }
 
   Stream<List<Map<String, dynamic>>> getMessages(String chatId) {
@@ -50,8 +66,10 @@ class ChatMethods {
     // Se non esiste, crea una nuova chat
     final newChat = await FirebaseFirestore.instance.collection('chats').add({
       'participants': [currentUserId, otherUserId],
-      'lastMessage': '',
+      'lastMessage': '', // Nessun messaggio iniziale
       'lastMessageTimestamp': FieldValue.serverTimestamp(),
+      'lastMessageSenderId': null, // Nessun mittente iniziale
+      'lastMessageRead': true, // Nessun messaggio da leggere inizialmente
     });
 
     return newChat.id; // Ritorna il nuovo ID della chat

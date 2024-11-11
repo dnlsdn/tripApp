@@ -57,12 +57,10 @@ class _NewFriendState extends State<NewFriend> {
                             highlightColor: Colors.transparent,
                             splashColor: Colors.transparent,
                             onTap: () async {
-                              final profileId =
-                                  await userMethods.getIdByUsername(
-                                      widget.requests[index]['mittente']);
-                              if (profileId != null) {
-                                final profileDetails = await userProvider
-                                    .getProfileDetails(profileId);
+                              if (widget.requests[index]['mittente'] != null) {
+                                final profileDetails =
+                                    await userProvider.getProfileDetails(
+                                        widget.requests[index]['mittente']);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -106,7 +104,9 @@ class _NewFriendState extends State<NewFriend> {
                                   ),
                                   Spacer(),
                                   IconButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      userMethods.acceptFriendRequest(widget.requests[index]['mittente'], user.uid);
+                                    },
                                     icon: Icon(
                                       Icons.check_circle_outline,
                                       color: Colors.green,

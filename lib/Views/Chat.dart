@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:travel_app/Controllers/ChatMethods.dart';
+import 'package:travel_app/Controllers/UserMethods.dart';
+import 'package:travel_app/Controllers/UserProvider.dart';
+import 'package:travel_app/Views/Contact.dart';
 import 'package:travel_app/Views/MessageList.dart';
 
 class Chat extends StatefulWidget {
   final String chatId;
+  final Map<String, dynamic>? profile;
 
-  Chat(this.chatId);
+  const Chat({super.key, required this.chatId, required this.profile});
 
   @override
   _ChatState createState() => _ChatState();
@@ -14,6 +18,8 @@ class Chat extends StatefulWidget {
 class _ChatState extends State<Chat> {
   final _controller = TextEditingController();
   ChatMethods chatMethods = ChatMethods();
+  UserMethods userMethods = UserMethods();
+  UserProvider userProvider = UserProvider();
 
   void _sendMessage() {
     if (_controller.text.trim().isNotEmpty) {
@@ -26,30 +32,67 @@ class _ChatState extends State<Chat> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat'),
-      ),
-      body: Column(
-        children: [
-          Expanded(child: MessageList(widget.chatId)),
+        title: Text(widget.profile?['username']),
+        actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration:
-                        InputDecoration(labelText: 'Scrivi un messaggio...'),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: _sendMessage,
-                ),
-              ],
+            child: InkWell(
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              onTap: () async {
+                final profileId = await userMethods
+                    .getIdByUsername(widget.profile?['username']);
+                if (profileId != null) {
+                  final profileDetails =
+                      await userProvider.getProfileDetails(profileId);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Contact(profile: profileDetails!),
+                    ),
+                  );
+                }
+              },
+              child: CircleAvatar(
+                backgroundColor: Colors.blue, // Colore di sfondo del bottone
+                backgroundImage: widget.profile?['photoUrl'] != ''
+                    ? NetworkImage(widget.profile?['photoUrl'])
+                    : null,
+                child: widget.profile?['photoUrl'] == ''
+                    ? Icon(Icons.person, color: Colors.white)
+                    : null,
+              ),
             ),
           ),
         ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Expanded(child: MessageList(widget.chatId)),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        decoration:
+                            InputDecoration(labelText: 'Write a Message...'),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.send),
+                      onPressed: _sendMessage,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -859,16 +859,22 @@ class GoogleMapsMethods {
             proximityThreshold;
   }
 
-  Future<String> loadNumbersPolylines() async {
+  Future<String> loadNumbersPolylines(String? id) async {
     CollectionReference polylinesCollection =
         FirebaseFirestore.instance.collection('polylines');
 
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      QuerySnapshot querySnapshot = await polylinesCollection
-          .where('mittente', isEqualTo: user.uid)
-          .get();
-      return querySnapshot.size.toString();
+      if (id != null) {
+        QuerySnapshot querySnapshot =
+            await polylinesCollection.where('mittente', isEqualTo: id).get();
+        return querySnapshot.size.toString();
+      } else {
+        QuerySnapshot querySnapshot = await polylinesCollection
+            .where('mittente', isEqualTo: user.uid)
+            .get();
+        return querySnapshot.size.toString();
+      }
     }
     return '0';
   }

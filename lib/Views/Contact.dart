@@ -32,6 +32,7 @@ class _ContactState extends State<Contact> {
   bool requestSent = false;
   String status = '';
   ChatMethods chatMethods = ChatMethods();
+  String destinatario = '';
 
   @override
   void initState() {
@@ -45,7 +46,8 @@ class _ContactState extends State<Contact> {
   }
 
   Future<void> loadNTravels() async {
-    final result = await googleMapsMethods.loadNumbersPolylines();
+    final result =
+        await googleMapsMethods.loadNumbersPolylines(widget.profile['uid']);
     setState(() {
       nTravels = result;
     });
@@ -56,8 +58,11 @@ class _ContactState extends State<Contact> {
     if (user != null) {
       final resultStatus = await userMethods.getFriendshipStatus(
           user.uid, widget.profile['uid']);
+      final resultDestinatario = await userMethods.getFriendshipDestinatario(
+          user.uid, widget.profile['uid']);
       setState(() {
         status = resultStatus;
+        destinatario = resultDestinatario;
       });
     }
   }
@@ -167,7 +172,10 @@ class _ContactState extends State<Contact> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => Chat(chatId: chatId),
+                              builder: (context) => Chat(
+                                chatId: chatId,
+                                profile: widget.profile,
+                              ),
                             ),
                           );
                         }
@@ -210,7 +218,7 @@ class _ContactState extends State<Contact> {
                     setState(() {
                       requestSent = true;
                     });
-                    Timer(Duration(seconds: 2), () {
+                    Timer(Duration(seconds: 1), () {
                       setState(() {
                         requestSent = false;
                       });
@@ -227,7 +235,7 @@ class _ContactState extends State<Contact> {
                           borderRadius: BorderRadius.circular(8)),
                       child: status == 'accepted'
                           ? const Text('You are already Friend!')
-                          : status == 'pending'
+                          : status == 'pending' && destinatario == user.uid
                               ? Row(
                                   children: [
                                     const Text('Request Pending'),
@@ -258,7 +266,7 @@ class _ContactState extends State<Contact> {
                                     ),
                                   ],
                                 )
-                              : status == 'sent'
+                              : status == 'pending' && destinatario != user.uid
                                   ? const Text('Friendship Sent')
                                   : InkWell(
                                       onTap: () {
