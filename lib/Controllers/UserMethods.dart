@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rxdart/rxdart.dart';
 
 class UserMethods {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -75,6 +76,7 @@ class UserMethods {
       return 'error';
     }
   }
+
   Future<String> getFriendshipDestinatario(
       String destinatario, String mittente) async {
     try {
@@ -164,5 +166,32 @@ class UserMethods {
     for (var request in requests) {
       print('Richiesta da: ${request['mittente']}');
     }
+  }
+
+  Stream<List<QueryDocumentSnapshot>> getFriendships(String userId) {
+    final mittenteQuery = FirebaseFirestore.instance
+        .collection('friendships')
+        .where('status', isEqualTo: 'accepted')
+        .where('mittente', isEqualTo: userId)
+        .snapshots();
+
+    final destinatarioQuery = FirebaseFirestore.instance
+        .collection('friendships')
+        .where('status', isEqualTo: 'accepted')
+        .where('destinatario', isEqualTo: userId)
+        .snapshots();
+
+    return Rx.combineLatest2<QuerySnapshot, QuerySnapshot,
+        List<QueryDocumentSnapshot>>(
+      mittenteQuery,
+      destinatarioQuery,
+      (mittenteSnap, destinatarioSnap) {
+        // Combina i documenti di entrambe le query
+        return [
+          ...mittenteSnap.docs,
+          ...destinatarioSnap.docs,
+        ];
+      },
+    );
   }
 }

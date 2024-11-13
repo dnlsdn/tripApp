@@ -24,6 +24,13 @@ class _ContactsState extends State<Contacts> {
   List<String> suggestions = [];
   late UserMethods userMethods;
   late UserProvider userProvider;
+  List<String> filterList = [
+    'See Recent Messages',
+    'See Friends\' List',
+  ];
+  bool seeMessages = true;
+  late var mittenteQuery;
+  late var destinatarioQuery;
 
   @override
   void initState() {
@@ -86,7 +93,9 @@ class _ContactsState extends State<Contacts> {
                     ),
                   ),
                   SizedBox(width: 8),
-                  _buildActionButton(Icons.filter_list, Colors.blue, () {}),
+                  _buildActionButton(Icons.filter_list, Colors.blue, () {
+                    showPopupWithFilters(context);
+                  }),
                   SizedBox(width: 8),
                   _buildActionButton(Icons.person_add, Colors.green, () async {
                     List<Map<String, dynamic>> requests =
@@ -103,49 +112,153 @@ class _ContactsState extends State<Contacts> {
               ),
               SizedBox(height: 10),
               if (controller.text.isEmpty)
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('chats')
-                        .where('participants', arrayContains: user.uid)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+                if (seeMessages == true)
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('chats')
+                          .where('participants', arrayContains: user.uid)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
 
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Center(
-                            child: Text("Zero Active Chat Found"));
-                      }
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return const Center(
+                              child: Text("Zero Active Chat Found"));
+                        }
 
-                      // Filtra ed ordina i documenti nel client
-                      final chats = snapshot.data!.docs;
-                      chats.sort((a, b) {
-                        final aTimestamp = (a.data()
-                                as Map<String, dynamic>)['lastMessageTimestamp']
-                            as Timestamp?;
-                        final bTimestamp = (b.data()
-                                as Map<String, dynamic>)['lastMessageTimestamp']
-                            as Timestamp?;
-                        return (bTimestamp?.millisecondsSinceEpoch ?? 0)
-                            .compareTo(aTimestamp?.millisecondsSinceEpoch ?? 0);
-                      });
+                        // Filtra ed ordina i documenti nel client
+                        final chats = snapshot.data!.docs;
+                        chats.sort((a, b) {
+                          final aTimestamp = (a.data() as Map<String, dynamic>)[
+                              'lastMessageTimestamp'] as Timestamp?;
+                          final bTimestamp = (b.data() as Map<String, dynamic>)[
+                              'lastMessageTimestamp'] as Timestamp?;
+                          return (bTimestamp?.millisecondsSinceEpoch ?? 0)
+                              .compareTo(
+                                  aTimestamp?.millisecondsSinceEpoch ?? 0);
+                        });
 
-                      return ListView.builder(
-                        itemCount: chats.length,
-                        itemBuilder: (context, index) {
-                          final chat = chats[index];
-                          final chatData = chat.data() as Map<String, dynamic>;
-                          final otherUserId = (chatData['participants'] as List)
-                              .firstWhere((id) => id != user.uid);
+                        return ListView.builder(
+                          itemCount: chats.length,
+                          itemBuilder: (context, index) {
+                            final chat = chats[index];
+                            final chatData =
+                                chat.data() as Map<String, dynamic>;
+                            final otherUserId =
+                                (chatData['participants'] as List)
+                                    .firstWhere((id) => id != user.uid);
 
-                          return _buildChatTile(chat.id, otherUserId, chatData);
-                        },
-                      );
-                    },
-                  ),
-                )
+                            return _buildChatTile(
+                                chat.id, otherUserId, chatData);
+                          },
+                        );
+                      },
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: StreamBuilder<List<QueryDocumentSnapshot>>(
+                      stream: userMethods.getFriendships(user.uid),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const Center(
+                            child: Text("No Friends Found"),
+                          );
+                        }
+
+                        final friendsList = snapshot.data!;
+
+                        return ListView.builder(
+                          itemCount: friendsList.length,
+                          itemBuilder: (context, index) {
+                            final friendData = friendsList[index].data()
+                                as Map<String, dynamic>;
+                            final friendId =
+                                friendData['destinatario'] == user.uid
+                                    ? friendData['mittente']
+                                    : friendData['destinatario'];
+
+                            return FutureBuilder<DocumentSnapshot>(
+                              future: FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(friendId)
+                                  .get(),
+                              builder: (context, friendSnapshot) {
+                                if (!friendSnapshot.hasData) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                final friendDetails = friendSnapshot.data!
+                                    .data() as Map<String, dynamic>;
+                                final username = friendDetails['username'];
+                                final photoUrl = friendDetails['photoUrl'];
+
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundImage: photoUrl != null
+                                        ? NetworkImage(photoUrl)
+                                        : null,
+                                    child: photoUrl == null
+                                        ? Icon(Icons.person)
+                                        : null,
+                                  ),
+                                  title: Row(
+                                    children: [
+                                      Text(username ?? 'Unknown User'),
+                                      Spacer(),
+                                      InkWell(
+                                        highlightColor: Colors.transparent,
+                                        splashColor: Colors.transparent,
+                                        onTap: () {
+                                          
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                            border:
+                                                Border.all(color: Colors.red),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: const Text('Unfollow'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () async {
+                                    final profileId = await userMethods
+                                        .getIdByUsername(username);
+                                    if (profileId != null) {
+                                      final profileDetails = await userProvider
+                                          .getProfileDetails(profileId);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              Contact(profile: profileDetails!),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  )
               else
                 Expanded(
                   child: ListView.builder(
@@ -200,6 +313,71 @@ class _ContactsState extends State<Contacts> {
         icon: Icon(icon, color: Colors.white),
         onPressed: onPressed,
       ),
+    );
+  }
+
+  void showPopupWithFilters(BuildContext context) {
+    Utente? user = Provider.of<UserProvider>(context, listen: false).getUser;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Filter Contacts"),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true, // Ridimensiona in base agli elementi
+              itemCount: filterList.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  // leading:
+                  //     widget.excludeMarker.contains(filterIconList[index])
+                  //         ? Icon(Icons.visibility_off)
+                  //         : Icon(Icons.visibility),
+                  title: Text(filterList[index]),
+                  onTap: () {
+                    if (index == 0) {
+                      setState(() {
+                        seeMessages = true;
+                      });
+                    } else {
+                      setState(() {
+                        seeMessages = false;
+                        mittenteQuery = FirebaseFirestore.instance
+                            .collection('friendships')
+                            .where('status', isEqualTo: 'accepted')
+                            .where('mittente', isEqualTo: user!.uid)
+                            .where('destinatario', isEqualTo: user.uid)
+                            .snapshots();
+                        destinatarioQuery = FirebaseFirestore.instance
+                            .collection('friendships')
+                            .where('status', isEqualTo: 'accepted')
+                            .where('destinatario', isEqualTo: user.uid)
+                            .snapshots();
+                      });
+                    }
+
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                "Close",
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

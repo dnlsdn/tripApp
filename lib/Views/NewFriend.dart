@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:travel_app/Controllers/UserMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
 import 'package:travel_app/Views/Contact.dart';
+
+import '../models/Utente.dart';
 
 class NewFriend extends StatefulWidget {
   final List<Map<String, dynamic>> requests;
@@ -16,6 +19,7 @@ class _NewFriendState extends State<NewFriend> {
   UserProvider userProvider = UserProvider();
   @override
   Widget build(BuildContext context) {
+    Utente? user = Provider.of<UserProvider>(context).getUser;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -105,7 +109,10 @@ class _NewFriendState extends State<NewFriend> {
                                   Spacer(),
                                   IconButton(
                                     onPressed: () {
-                                      userMethods.acceptFriendRequest(widget.requests[index]['mittente'], user.uid);
+                                      userMethods.acceptFriendRequest(user!.uid,
+                                          widget.requests[index]['mittente']);
+
+                                      Navigator.pop(context);
                                     },
                                     icon: Icon(
                                       Icons.check_circle_outline,
@@ -114,7 +121,12 @@ class _NewFriendState extends State<NewFriend> {
                                     ),
                                   ),
                                   IconButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      userMethods.deleteFriendRequest(user!.uid,
+                                          widget.requests[index]['mittente']);
+
+                                      Navigator.pop(context);
+                                    },
                                     icon: Icon(
                                       Icons.cancel_outlined,
                                       color: Colors.red,

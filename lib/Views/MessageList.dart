@@ -23,7 +23,7 @@ class MessageList extends StatelessWidget {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(child: Text("Nessun messaggio presente."));
+          return Center(child: Text(""));
         }
 
         final messages = snapshot.data!.docs;
@@ -36,7 +36,8 @@ class MessageList extends StatelessWidget {
             return MessageBubble(
               text: message['text'] ?? '',
               senderUsername: message['senderUsername'] ?? 'Anonimo',
-              isMe: message['senderId'] == FirebaseAuth.instance.currentUser?.uid,
+              isMe:
+                  message['senderId'] == FirebaseAuth.instance.currentUser?.uid,
               timestamp: (message['timestamp'] as Timestamp?)?.toDate(),
             );
           },
