@@ -27,8 +27,9 @@ class _AddItineraryState extends State<AddItinerary> {
   String address = "";
   List<LatLng> stops = [];
   List<String> addresses = [];
-  String mode = "";
+  String mode = "cycle";
   IconData modeIcon = Icons.mode_standby;
+  bool isGPX = false;
 
   @override
   void initState() {
@@ -253,218 +254,240 @@ class _AddItineraryState extends State<AddItinerary> {
                     SizedBox(
                       height: 18,
                     ),
-                    Text('Initial Location',
-                        style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8),
-                    Text(
-                      address == "" ? '//' : address,
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    SizedBox(height: 8),
-                    TextField(
-                      controller: locationController,
-                      cursorColor: Colors.white,
-                      decoration: InputDecoration(
-                        labelText: 'Search Location',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0)),
-                        labelStyle: TextStyle(color: Colors.white),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: Colors.blue, width: 2.0),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: Colors.grey, width: 1.0),
+                    InkWell(
+                      highlightColor: Colors.transparent,
+                      splashColor: Colors.transparent,
+                      onTap: () {
+                        setState(() {
+                          isGPX = !isGPX;
+                        });
+                      },
+                      child: Center(
+                        child: Text(
+                          'Click here if you want to upload a GPX file!',
+                          style: TextStyle(color: Colors.blue),
                         ),
                       ),
                     ),
-                    if (showPlacesList)
+                    SizedBox(
+                      height: 18,
+                    ),
+                    if (!isGPX) ...[
+                      Text('Initial Location',
+                          style: TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 8),
+                      Text(
+                        address == "" ? '//' : address,
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      SizedBox(height: 8),
+                      TextField(
+                        controller: locationController,
+                        cursorColor: Colors.white,
+                        decoration: InputDecoration(
+                          labelText: 'Search Location',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0)),
+                          labelStyle: TextStyle(color: Colors.white),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.blue, width: 2.0),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.grey, width: 1.0),
+                          ),
+                        ),
+                      ),
+                      if (showPlacesList)
+                        SizedBox(
+                          height: 8,
+                        ),
+                      if (showPlacesList)
+                        Container(
+                          height:
+                              380, // Imposta un'altezza fissa o usa Expanded se necessario
+                          child: ListView.builder(
+                            itemCount: googleMapsMethods.placesList.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                margin: EdgeInsets.symmetric(
+                                    vertical: 4, horizontal: 8),
+                                decoration: BoxDecoration(
+                                  border:
+                                      Border.all(color: Colors.blue, width: 2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ListTile(
+                                  onTap: () async {
+                                    setState(() {
+                                      showPlacesList = false;
+                                      locationController.text =
+                                          googleMapsMethods.placesList[index]
+                                              ['description'];
+                                    });
+                                    Map<String, dynamic> latLng =
+                                        await googleMapsMethods
+                                            .getLatLngFromAddress(
+                                                googleMapsMethods
+                                                        .placesList[index]
+                                                    ['description']);
+                                    address = googleMapsMethods
+                                        .placesList[index]['description'];
+                                    setState(() {
+                                      showPlacesList = false;
+                                      locationController.text = "";
+                                      FocusScope.of(context).unfocus();
+                                    });
+                                  },
+                                  title: Text(googleMapsMethods
+                                          .placesList[index]['description'] ??
+                                      'No title available'),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      SizedBox(
+                        height: 18,
+                      ),
+                      if (!showPlacesList)
+                        Text('Title',
+                            style: TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 8),
+                      if (!showPlacesList)
+                        TextField(
+                          controller: titleController,
+                          cursorColor: Colors.white,
+                          decoration: InputDecoration(
+                            labelText: 'Itinerary Title',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0)),
+                            labelStyle: TextStyle(color: Colors.white),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.blue, width: 2.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 1.0),
+                            ),
+                          ),
+                        ),
+                      SizedBox(
+                        height: 18,
+                      ),
+                      if (!showPlacesList)
+                        Text('Description',
+                            style: TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold)),
                       SizedBox(
                         height: 8,
                       ),
-                    if (showPlacesList)
-                      Container(
-                        height:
-                            380, // Imposta un'altezza fissa o usa Expanded se necessario
-                        child: ListView.builder(
-                          itemCount: googleMapsMethods.placesList.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              margin: EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 8),
-                              decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: Colors.blue, width: 2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: ListTile(
-                                onTap: () async {
-                                  setState(() {
-                                    showPlacesList = false;
-                                    locationController.text = googleMapsMethods
-                                        .placesList[index]['description'];
-                                  });
-                                  Map<String, dynamic> latLng =
-                                      await googleMapsMethods
-                                          .getLatLngFromAddress(
-                                              googleMapsMethods
-                                                      .placesList[index]
-                                                  ['description']);
-                                  address = googleMapsMethods.placesList[index]
-                                      ['description'];
-                                  setState(() {
-                                    showPlacesList = false;
-                                    locationController.text = "";
-                                    FocusScope.of(context).unfocus();
-                                  });
-                                },
-                                title: Text(googleMapsMethods.placesList[index]
-                                        ['description'] ??
-                                    'No title available'),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    SizedBox(
-                      height: 18,
-                    ),
-                    if (!showPlacesList)
-                      Text('Title',
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8),
-                    if (!showPlacesList)
-                      TextField(
-                        controller: titleController,
-                        cursorColor: Colors.white,
-                        decoration: InputDecoration(
-                          labelText: 'Itinerary Title',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12.0)),
-                          labelStyle: TextStyle(color: Colors.white),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.blue, width: 2.0),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1.0),
+                      if (!showPlacesList)
+                        TextField(
+                          controller: descriptionController,
+                          cursorColor: Colors.white,
+                          decoration: InputDecoration(
+                            labelText: 'Itinerary Description',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0)),
+                            labelStyle: TextStyle(color: Colors.white),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.blue, width: 2.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 1.0),
+                            ),
                           ),
                         ),
-                      ),
-                    SizedBox(
-                      height: 18,
-                    ),
-                    if (!showPlacesList)
-                      Text('Description',
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold)),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    if (!showPlacesList)
-                      TextField(
-                        controller: descriptionController,
-                        cursorColor: Colors.white,
-                        decoration: InputDecoration(
-                          labelText: 'Itinerary Description',
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12.0)),
-                          labelStyle: TextStyle(color: Colors.white),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.blue, width: 2.0),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.grey, width: 1.0),
-                          ),
-                        ),
-                      ),
-                    SizedBox(
-                      height: 18,
-                    ),
-                    if (!showPlacesList)
-                      Text('Mode',
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold)),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    if (!showPlacesList)
-                      Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: buildMenuItem(
-                            icon: modeIcon,
-                            text: mode.isNotEmpty ? mode : 'Select Mode Type',
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text('Select Mode Type'),
-                                    content: DropdownButton<String>(
-                                      focusColor: Colors.transparent,
-                                      value: mode.isNotEmpty ? mode : null,
-                                      onChanged: (String? newValue) {
-                                        setState(() {
-                                          mode = newValue!;
-                                        });
-                                        Navigator.of(context).pop();
-                                      },
-                                      items: <DropdownMenuItem<String>>[
-                                        DropdownMenuItem(
-                                          value: 'Foot',
-                                          child: Text('Foot'),
-                                          onTap: () {
-                                            mode = 'foot';
-                                            modeIcon = Icons.hiking;
-                                          },
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'Cycle',
-                                          child: Text('Cycle'),
-                                          onTap: () {
-                                            mode = 'cycle';
-                                            modeIcon = Icons.directions_bike;
-                                          },
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'Car',
-                                          child: Text('Car'),
-                                          onTap: () {
-                                            mode = 'car';
-                                            modeIcon = Icons.directions_car;
-                                          },
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'Moto',
-                                          child: Text('Moto'),
-                                          onTap: () {
-                                            mode = 'moto';
-                                            modeIcon = Icons.motorcycle;
-                                          },
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'Hybrid',
-                                          child: Text('Hybrid'),
-                                          onTap: () {
-                                            mode = 'hybrid';
-                                            modeIcon = Icons.mode_standby;
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
-                            }),
-                      ),
+                    ] else
+                      Text('ciao'),
+                    // SizedBox(
+                    //   height: 18,
+                    // ),
+                    // if (!showPlacesList)
+                    //   Text('Mode',
+                    //       style: TextStyle(
+                    //           fontSize: 22, fontWeight: FontWeight.bold)),
+                    // SizedBox(
+                    //   height: 8,
+                    // ),
+                    // if (!showPlacesList)
+                    //   Container(
+                    //     decoration: BoxDecoration(
+                    //         border: Border.all(color: Colors.grey),
+                    //         borderRadius: BorderRadius.circular(8)),
+                    //     child: buildMenuItem(
+                    //         icon: modeIcon,
+                    //         text: mode.isNotEmpty ? mode : 'Select Mode Type',
+                    //         onTap: () {
+                    //           showDialog(
+                    //             context: context,
+                    //             builder: (BuildContext context) {
+                    //               return AlertDialog(
+                    //                 title: Text('Select Mode Type'),
+                    //                 content: DropdownButton<String>(
+                    //                   focusColor: Colors.transparent,
+                    //                   value: mode.isNotEmpty ? mode : null,
+                    //                   onChanged: (String? newValue) {
+                    //                     setState(() {
+                    //                       mode = newValue!;
+                    //                     });
+                    //                     Navigator.of(context).pop();
+                    //                   },
+                    //                   items: <DropdownMenuItem<String>>[
+                    //                     DropdownMenuItem(
+                    //                       value: 'Foot',
+                    //                       child: Text('Foot'),
+                    //                       onTap: () {
+                    //                         mode = 'foot';
+                    //                         modeIcon = Icons.hiking;
+                    //                       },
+                    //                     ),
+                    //                     DropdownMenuItem(
+                    //                       value: 'Cycle',
+                    //                       child: Text('Cycle'),
+                    //                       onTap: () {
+                    //                         mode = 'cycle';
+                    //                         modeIcon = Icons.directions_bike;
+                    //                       },
+                    //                     ),
+                    //                     DropdownMenuItem(
+                    //                       value: 'Car',
+                    //                       child: Text('Car'),
+                    //                       onTap: () {
+                    //                         mode = 'car';
+                    //                         modeIcon = Icons.directions_car;
+                    //                       },
+                    //                     ),
+                    //                     DropdownMenuItem(
+                    //                       value: 'Moto',
+                    //                       child: Text('Moto'),
+                    //                       onTap: () {
+                    //                         mode = 'moto';
+                    //                         modeIcon = Icons.motorcycle;
+                    //                       },
+                    //                     ),
+                    //                     DropdownMenuItem(
+                    //                       value: 'Hybrid',
+                    //                       child: Text('Hybrid'),
+                    //                       onTap: () {
+                    //                         mode = 'hybrid';
+                    //                         modeIcon = Icons.mode_standby;
+                    //                       },
+                    //                     ),
+                    //                   ],
+                    //                 ),
+                    //               );
+                    //             },
+                    //           );
+                    //         }),
+                    //   ),
                     if (alertEmpty)
                       Padding(
                         padding: const EdgeInsets.all(8.0),

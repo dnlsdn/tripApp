@@ -74,4 +74,29 @@ class ChatMethods {
 
     return newChat.id; // Ritorna il nuovo ID della chat
   }
+
+  Future<String?> findChatId(String userId1, String userId2) async {
+    final firestore = FirebaseFirestore.instance;
+
+    try {
+      // Query per trovare la chat con entrambi gli ID nei partecipanti
+      final querySnapshot = await firestore
+          .collection('chats')
+          .where('participants', arrayContains: userId1)
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        final participants = List<String>.from(doc['participants']);
+        if (participants.contains(userId2)) {
+          return doc.id; // Restituisce il chatId
+        }
+      }
+
+      // Nessuna chat trovata
+      return null;
+    } catch (e) {
+      print("Errore nel trovare la chat: $e");
+      return null;
+    }
+  }
 }

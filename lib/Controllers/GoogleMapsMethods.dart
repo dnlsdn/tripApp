@@ -878,4 +878,32 @@ class GoogleMapsMethods {
     }
     return '0';
   }
+
+  Future<List<Map<String, dynamic>>> getPolylinesAsList() async {
+    CollectionReference polylinesCollection =
+        FirebaseFirestore.instance.collection('polylines');
+
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      throw Exception('Utente non autenticato');
+    }
+
+    String uid = user.uid;
+
+    // Query per ottenere i documenti Firestore
+    QuerySnapshot querySnapshot =
+        await polylinesCollection.where('mittente', isEqualTo: uid).get();
+
+    // Mappa i documenti in una lista di mappe
+    List<Map<String, dynamic>> polylinesList = querySnapshot.docs.map((doc) {
+      return {
+        'id': doc.id,
+        ...doc.data()
+            as Map<String, dynamic>, // Include tutti i campi del documento
+      };
+    }).toList();
+
+    return polylinesList;
+  }
 }

@@ -2,10 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:travel_app/Controllers/ChatMethods.dart';
 import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
+import 'package:travel_app/Controllers/UserMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
+import 'package:travel_app/Views/Chat.dart';
 import 'package:travel_app/Views/Contact.dart';
 import 'package:travel_app/Views/DescriptionScreen.dart';
+import 'package:travel_app/models/Utente.dart';
 
 class DetailsPolyline extends StatefulWidget {
   final Map<String, dynamic> details;
@@ -28,6 +33,8 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
   late UserProvider userProvider;
   String sender = '';
   IconData modeIcon = Icons.mode_standby;
+  late UserMethods userMethods;
+  late ChatMethods chatMethods;
 
   @override
   void initState() {
@@ -40,6 +47,8 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
     firstDay = firstDayTimestamp.toDate();
     userProvider = UserProvider();
     loadSender();
+    userMethods = UserMethods();
+    chatMethods = ChatMethods();
 
     switch (widget.details['mode']) {
       case 'Foot':
@@ -65,6 +74,7 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
 
   @override
   Widget build(BuildContext context) {
+    Utente? user = Provider.of<UserProvider>(context).getUser;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -239,7 +249,42 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
                   ),
                   Spacer(),
                   InkWell(
-                    onTap: () {},
+                    onTap: () async {
+                      final profileId =
+                          await userMethods.getIdByUsername(sender);
+
+                      if (profileId == user!.uid) {
+                        return;
+                      }
+                      final profileDetails =
+                          await userProvider.getProfileDetails(profileId!);
+
+                      String? chatId =
+                          await chatMethods.findChatId(user.uid, profileId);
+                      if (chatId != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Chat(
+                              chatId: chatId!,
+                              profile: profileDetails,
+                            ),
+                          ),
+                        );
+                      } else {
+                        chatId =
+                            await chatMethods.startChat(user.uid, profileId);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Chat(
+                              chatId: chatId!,
+                              profile: profileDetails,
+                            ),
+                          ),
+                        );
+                      }
+                    },
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(

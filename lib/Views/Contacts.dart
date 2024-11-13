@@ -68,11 +68,11 @@ class _ContactsState extends State<Contacts> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Contacts',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
               ),
-              SizedBox(height: 18),
+              const SizedBox(height: 18),
               Row(
                 children: [
                   Expanded(

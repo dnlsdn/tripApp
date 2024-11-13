@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 
 class UserMethods {
@@ -193,5 +194,30 @@ class UserMethods {
         ];
       },
     );
+  }
+
+  Future<void> deleteUserAccount() async {
+    try {
+      // Ottieni l'utente attualmente loggato
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        await user.delete(); // Elimina l'utente
+        print('Account eliminato con successo.');
+      } else {
+        print('Nessun utente autenticato trovato.');
+      }
+    } catch (e) {
+      print('Errore durante l\'eliminazione dell\'utente: $e');
+    }
+  }
+
+  Future<void> deleteUserData(String userId) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(userId).delete();
+      print('Dati utente rimossi con successo.');
+    } catch (e) {
+      print('Errore durante la rimozione dei dati utente: $e');
+    }
   }
 }
