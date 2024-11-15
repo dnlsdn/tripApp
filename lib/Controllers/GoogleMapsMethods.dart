@@ -130,11 +130,8 @@ class GoogleMapsMethods {
       BuildContext context,
       LatLng? searchLocation,
       List<String> excludeIcons) async {
-    // Aggiungi un parametro per le icone da escludere
-    // Clear existing markers
     markers.clear();
 
-    // Fetch data from Firestore
     final snapshot =
         await FirebaseFirestore.instance.collection('markers').get();
 
@@ -150,22 +147,18 @@ class GoogleMapsMethods {
       });
     }
 
-    // Update locations list
     locations.clear();
     locations.addAll(newLocations);
 
-    // Create markers
     for (Map<String, dynamic> location in locations) {
       final iconImage = location['iconImage'] as String? ?? 'default';
 
-      // Controlla se l'icona è nella lista delle icone da escludere
       if (excludeIcons.contains(iconImage)) {
-        continue; // Salta al prossimo ciclo se l'icona è da escludere
+        continue;
       }
 
       final markerIcon = await getCustomIcon(iconImage);
       if (searchLocation == null) {
-        // Fetch the current location
         Position currentPosition = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
         );
@@ -184,7 +177,6 @@ class GoogleMapsMethods {
           markerPosition.longitude,
         );
 
-        // Only add markers within 100 meters
         if (distanceInMeters <= 18000) {
           markers.add(
             Marker(
@@ -193,7 +185,6 @@ class GoogleMapsMethods {
               position: markerPosition,
               onTap: () {
                 if (context.findRenderObject() != null) {
-                  // Verifica che il contesto sia ancora valido
                   Future.delayed(const Duration(milliseconds: 500), () {
                     _showInfoWindow(location, context);
                   });
@@ -204,7 +195,6 @@ class GoogleMapsMethods {
         }
         setState(() {});
       } else {
-        // Calculate distance between searchLocation and the marker's position
         final markerPosition = LatLng(
           _toDouble(location['latitude']),
           _toDouble(location['longitude']),
@@ -217,7 +207,6 @@ class GoogleMapsMethods {
           markerPosition.longitude,
         );
 
-        // Only add markers within 100 meters
         if (distanceInMeters <= 18000) {
           markers.add(
             Marker(
@@ -235,7 +224,6 @@ class GoogleMapsMethods {
       }
     }
 
-    // Update state once after all markers are added
     setState(() {});
   }
 
@@ -269,11 +257,10 @@ class GoogleMapsMethods {
               child: Text(
                 location['title'] ?? 'No Title',
                 style: TextStyle(color: Colors.white, fontSize: 18),
-                maxLines: 2, // Limita il testo a una sola riga
-                overflow: TextOverflow.ellipsis, // Tronca il testo con "..."
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            //Spacer(),
             SizedBox(
               height: 18,
             ),
@@ -299,7 +286,6 @@ class GoogleMapsMethods {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                    //padding: EdgeInsets.symmetric(horizontal: 24, vertical: 2),
                     textStyle: TextStyle(fontSize: 15),
                     overlayColor: Colors.transparent),
               ),
@@ -323,43 +309,36 @@ class GoogleMapsMethods {
         return double.parse(value);
       } catch (e) {
         print('Errore durante la conversione in double: $e');
-        return 0.0; // O un valore predefinito che ha senso per te
+        return 0.0;
       }
     } else {
       print('Tipo di valore non riconosciuto: $value');
-      return 0.0; // O un valore predefinito
+      return 0.0;
     }
   }
 
   Future<void> getCurrentLocation(
       LatLng currentPosition, GoogleMapController? mapController) async {
     try {
-      // Controlla se il servizio di localizzazione è abilitato
       if (await Geolocator.isLocationServiceEnabled()) {
         Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
         );
-
-        // Aggiorna la posizione corrente
         setState(() {
           currentPosition = LatLng(position.latitude, position.longitude);
         });
 
-        // Controlla che mapController non sia nullo prima di aggiornare la posizione sulla mappa
         mapController
             ?.animateCamera(CameraUpdate.newLatLngZoom(currentPosition, 14));
       } else {
-        // Se la localizzazione è disabilitata, usa una posizione di default
         setState(() {
           currentPosition = const LatLng(41.730778, 12.28445);
         });
       }
     } catch (e) {
-      // Gestione di eventuali eccezioni
       print("Errore durante l'ottenimento della posizione: $e");
       setState(() {
-        currentPosition =
-            const LatLng(41.730778, 12.28445); // Posizione di default
+        currentPosition = const LatLng(41.730778, 12.28445);
       });
     }
   }
@@ -410,14 +389,13 @@ class GoogleMapsMethods {
         latitude: _toDouble(lat),
         longitude: _toDouble(lng),
         timestamp: DateTime.now(),
-        accuracy: 0.0, // imposta un valore predefinito o logico per accuracy
-        altitude: 0.0, // imposta un valore predefinito o logico per altitude
-        heading: 0.0, // imposta un valore predefinito o logico per heading
-        speed: 0.0, // imposta un valore predefinito o logico per speed
+        accuracy: 0.0,
+        altitude: 0.0,
+        heading: 0.0,
+        speed: 0.0,
         speedAccuracy: 0.0,
         altitudeAccuracy: 0,
-        headingAccuracy:
-            0, // imposta un valore predefinito o logico per speedAccuracy
+        headingAccuracy: 0,
       );
     }
     try {
@@ -481,29 +459,24 @@ class GoogleMapsMethods {
   Future<bool> checkIfLatLngExists(double lat, double lng) async {
     String latString = lat.toString();
     String lngString = lng.toString();
-    // Ottieni il riferimento alla collezione
+
     CollectionReference collectionRef =
         FirebaseFirestore.instance.collection('markers');
 
-    // Esegui una query per cercare documenti con lo stesso titolo
     QuerySnapshot querySnapshot = await collectionRef
         .where('latitude', isEqualTo: latString)
         .where('longitude', isEqualTo: lngString)
         .get();
 
-    // Controlla se ci sono risultati
     if (querySnapshot.docs.isNotEmpty) {
-      // Documento con lo stesso titolo trovato
       return true;
     } else {
-      // Nessun documento con lo stesso titolo trovato
       return false;
     }
   }
 
   Future<Map<String, dynamic>?> getMarkerDetails(String markerId) async {
     try {
-      // Recupera i dettagli del marker dalla collezione 'markers'
       DocumentSnapshot doc = await FirebaseFirestore.instance
           .collection('markers')
           .doc(markerId)
@@ -533,14 +506,12 @@ class GoogleMapsMethods {
       String markerId, int newNumber, int side) async {
     if (side == 0) {
       try {
-        // Recupera il documento che corrisponde al markerId
         var querySnapshot = await FirebaseFirestore.instance
             .collection('markers')
             .where('id', isEqualTo: markerId)
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
-          // Aggiorna il documento trovato
           await querySnapshot.docs.first.reference
               .update({'positiveFeedback': newNumber});
           print('Documento aggiornato con successo');
@@ -552,14 +523,12 @@ class GoogleMapsMethods {
       }
     } else if (side == 1) {
       try {
-        // Recupera il documento che corrisponde al markerId
         var querySnapshot = await FirebaseFirestore.instance
             .collection('markers')
             .where('id', isEqualTo: markerId)
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
-          // Aggiorna il documento trovato
           await querySnapshot.docs.first.reference
               .update({'negativeFeedback': newNumber});
           print('Documento aggiornato con successo');
@@ -575,7 +544,7 @@ class GoogleMapsMethods {
 
   double _calculateDistanceInMeters(
       double lat1, double lon1, double lat2, double lon2) {
-    const earthRadius = 6371000; // Radius of the Earth in meters
+    const earthRadius = 6371000;
     final dLat = _degToRad(lat2 - lat1);
     final dLon = _degToRad(lon2 - lon1);
 
@@ -629,37 +598,6 @@ class GoogleMapsMethods {
         .catchError((error) => print("Failed to add polyline: $error"));
   }
 
-  // Future<void> loadPolylinesFromFirestore(Set<Polyline> polylines) async {
-  //   CollectionReference polylinesCollection =
-  //       FirebaseFirestore.instance.collection('polylines');
-
-  //   QuerySnapshot querySnapshot = await polylinesCollection.get();
-  //   Set<Polyline> tempPolylines = {};
-
-  //   for (QueryDocumentSnapshot doc in querySnapshot.docs) {
-  //     List<dynamic> stopsJson = doc['stops'];
-
-  //     List<LatLng> polylinePoints = stopsJson.map((stop) {
-  //       double lat = stop['latitude'];
-  //       double lng = stop['longitude'];
-  //       return LatLng(lat, lng);
-  //     }).toList();
-
-  //     Polyline polyline = Polyline(
-  //       polylineId: PolylineId(doc.id),
-  //       points: polylinePoints,
-  //       color: getRandomColor(),
-  //       width: 5,
-  //     );
-
-  //     tempPolylines.add(polyline);
-  //   }
-
-  //   setState(() {
-  //     polylines.addAll(tempPolylines);
-  //   });
-  // }
-
   Color getRandomColor() {
     Random random = Random();
     return Color.fromARGB(
@@ -669,8 +607,6 @@ class GoogleMapsMethods {
       random.nextInt(256),
     );
   }
-
-  // In GoogleMapsMethods class, add these methods:
 
   Future<Map<String, dynamic>> getPolylineDetails(String polylineId) async {
     try {
@@ -702,7 +638,6 @@ class GoogleMapsMethods {
       CollectionReference polylinesCollection =
           FirebaseFirestore.instance.collection('polylines');
 
-      // Filtro per caricare solo le polylines con lastDay maggiore della data attuale
       DateTime today = DateTime.now().subtract(Duration(days: 1));
       QuerySnapshot? querySnapshot;
       User? user = FirebaseAuth.instance.currentUser;
@@ -722,7 +657,7 @@ class GoogleMapsMethods {
       }
 
       Set<Polyline> tempPolylines = {};
-      Set<Marker> tempMarkers = {}; // Set temporaneo per i marker
+      Set<Marker> tempMarkers = {};
 
       for (QueryDocumentSnapshot doc in querySnapshot!.docs) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
@@ -736,7 +671,6 @@ class GoogleMapsMethods {
           );
         }).toList();
 
-        // Crea una polyline con i punti caricati
         Polyline polyline = Polyline(
           polylineId: PolylineId(polylineId),
           points: polylinePoints,
@@ -752,7 +686,6 @@ class GoogleMapsMethods {
           },
         );
 
-        // Aggiungi la polyline al set temporaneo
         tempPolylines.add(polyline);
 
         LatLng point0 = polylinePoints[0];
@@ -809,19 +742,17 @@ class GoogleMapsMethods {
         polylines.addAll(tempPolylines);
 
         markers.clear();
-        markers.addAll(tempMarkers); // Aggiorna i marker sulla mappa
+        markers.addAll(tempMarkers);
       });
     } catch (e) {
       print('Error loading polylines: $e');
     }
   }
 
-  // Funzione per verificare se il tocco è vicino a una polyline
   bool isNearPolyline(LatLng tapPosition, Polyline polyline) {
     for (var point in polyline.points) {
       double distance = calculateDistance(tapPosition, point);
       if (distance < 0.001) {
-        // Soglia di distanza in gradi, circa 100 metri
         return true;
       }
     }
@@ -851,8 +782,7 @@ class GoogleMapsMethods {
   }
 
   bool isCloseToMarker(LatLng touchPosition, LatLng markerPosition) {
-    const double proximityThreshold =
-        0.001; // Soglia per la distanza (es. 0.001 gradi)
+    const double proximityThreshold = 0.001;
     return (touchPosition.latitude - markerPosition.latitude).abs() <
             proximityThreshold &&
         (touchPosition.longitude - markerPosition.longitude).abs() <
@@ -891,16 +821,13 @@ class GoogleMapsMethods {
 
     String uid = user.uid;
 
-    // Query per ottenere i documenti Firestore
     QuerySnapshot querySnapshot =
         await polylinesCollection.where('mittente', isEqualTo: uid).get();
 
-    // Mappa i documenti in una lista di mappe
     List<Map<String, dynamic>> polylinesList = querySnapshot.docs.map((doc) {
       return {
         'id': doc.id,
-        ...doc.data()
-            as Map<String, dynamic>, // Include tutti i campi del documento
+        ...doc.data() as Map<String, dynamic>,
       };
     }).toList();
 

@@ -5,9 +5,9 @@ class GeneralMethods {
     final Uri params = Uri(
       scheme: 'mailto',
       path:
-          'tripapp18@gmail.com', // inserisci qui l'indirizzo email destinatario
+          'tripapp18@gmail.com',
       query:
-          'subject=Report User&body=$body', // inserisci qui l'oggetto dell'email
+          'subject=Report User&body=$body',
     );
 
     final url = params.toString();

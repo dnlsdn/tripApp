@@ -18,8 +18,7 @@ class AddMarker extends StatefulWidget {
 class _AddMarkerState extends State<AddMarker> {
   TextEditingController searchController = TextEditingController();
   late GoogleMapsMethods googleMapsMethods;
-  LatLng currentPosition =
-      LatLng(37.77483, -122.41942); // San Francisco defaults
+  LatLng currentPosition = LatLng(37.77483, -122.41942);
   GoogleMapController? mapController;
   String address = "";
   bool showPlacesList = false;
@@ -329,7 +328,7 @@ class _AddMarkerState extends State<AddMarker> {
 
   Widget buildPlacesList() {
     return Container(
-      height: 380, // Imposta un'altezza fissa o usa Expanded se necessario
+      height: 380,
       child: ListView.builder(
         itemCount: googleMapsMethods.placesList.length,
         itemBuilder: (context, index) {
@@ -448,7 +447,6 @@ class _AddMarkerState extends State<AddMarker> {
             child: image != null
                 ? Container(
                     decoration: BoxDecoration(
-                        //shape: BoxShape.circle,
                         border: Border.all(color: Colors.blue, width: 2),
                         borderRadius: BorderRadius.circular(2)),
                     child: Padding(
@@ -456,14 +454,12 @@ class _AddMarkerState extends State<AddMarker> {
                       child: Image.memory(
                         image!,
                         height: 138,
-                        //width: 188,
                       ),
                     ),
                   )
                 : Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                        //shape: BoxShape.circle,
                         border: Border.all(color: Colors.blue, width: 2),
                         borderRadius: BorderRadius.circular(8)),
                     child: const CircleAvatar(
@@ -485,7 +481,6 @@ class _AddMarkerState extends State<AddMarker> {
                 padding: const EdgeInsets.all(4.0),
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    //color: image != null ? null : Colors.blue,
                     border: Border.all(color: Colors.blue)),
                 child: const Icon(
                   Icons.add,
@@ -524,8 +519,7 @@ class _AddMarkerState extends State<AddMarker> {
   Widget buildSaveButton(bool isKeyboardVisible) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
-      height:
-          isKeyboardVisible ? 0 : 68, // Altezza del pulsante quando visibile
+      height: isKeyboardVisible ? 0 : 68,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Opacity(

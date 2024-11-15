@@ -47,19 +47,17 @@ class _AddItineraryState extends State<AddItinerary> {
   Future<void> selectStartDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: startDate ??
-          DateTime.now(), // Usa la data corrente se startDate è null
+      initialDate: startDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: ColorScheme.dark(
-              primary: Colors.white, // Colore dell'intestazione
-              onPrimary: Colors.black, // Colore del testo dell'intestazione
-              onSurface: Colors.white, // Colore del testo dei giorni
+              primary: Colors.white,
+              onPrimary: Colors.black,
+              onSurface: Colors.white,
             ),
-            //dialogBackgroundColor: Colors.green, // Colore dello sfondo
           ),
           child: child!,
         );
@@ -76,19 +74,17 @@ class _AddItineraryState extends State<AddItinerary> {
   Future<void> selectEndDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate:
-          endDate ?? DateTime.now(), // Usa la data corrente se startDate è null
+      initialDate: endDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: ColorScheme.dark(
-              primary: Colors.white, // Colore dell'intestazione
-              onPrimary: Colors.black, // Colore del testo dell'intestazione
-              onSurface: Colors.white, // Colore del testo dei giorni
+              primary: Colors.white,
+              onPrimary: Colors.black,
+              onSurface: Colors.white,
             ),
-            //dialogBackgroundColor: Colors.green, // Colore dello sfondo
           ),
           child: child!,
         );
@@ -102,11 +98,9 @@ class _AddItineraryState extends State<AddItinerary> {
     }
   }
 
-// Aggiungi un metodo per calcolare il numero di giorni
   int getDaysBetween() {
     if (startDate != null && endDate != null) {
-      return endDate!.difference(startDate!).inDays +
-          1; // +1 per includere il giorno finale
+      return endDate!.difference(startDate!).inDays + 1;
     }
     return 0;
   }
@@ -124,12 +118,10 @@ class _AddItineraryState extends State<AddItinerary> {
                 if (currentDay < getDaysBetween() - 1) {
                   currentDay++;
                 }
-                // Naviga alla schermata del giorno successivo
                 navigateToDay(currentDay);
               });
             },
-            isLastDay: dayIndex ==
-                getDaysBetween() - 1, // Verifica se è l'ultimo giorno
+            isLastDay: dayIndex == getDaysBetween() - 1,
             stops: stops,
             title: titleController.text,
             description: descriptionController.text,
@@ -306,8 +298,7 @@ class _AddItineraryState extends State<AddItinerary> {
                         ),
                       if (showPlacesList)
                         Container(
-                          height:
-                              380, // Imposta un'altezza fissa o usa Expanded se necessario
+                          height: 380,
                           child: ListView.builder(
                             itemCount: googleMapsMethods.placesList.length,
                             itemBuilder: (context, index) {
@@ -576,11 +567,10 @@ class _AddItineraryState extends State<AddItinerary> {
   }
 }
 
-// Pagina per visualizzare le informazioni relative al giorno selezionato
 class DayScreen extends StatefulWidget {
   final DateTime date;
-  final VoidCallback onNext; // Callback per la navigazione al giorno successivo
-  final bool isLastDay; // Indica se è l'ultimo giorno
+  final VoidCallback onNext;
+  final bool isLastDay;
   final List<LatLng> stops;
   final String title;
   final String description;
@@ -686,8 +676,7 @@ class _DayScreenState extends State<DayScreen> {
               ),
             if (showPlacesList)
               Container(
-                height:
-                    380, // Imposta un'altezza fissa o usa Expanded se necessario
+                height: 380,
                 child: ListView.builder(
                   itemCount: googleMapsMethods.placesList.length,
                   itemBuilder: (context, index) {
@@ -746,7 +735,6 @@ class _DayScreenState extends State<DayScreen> {
                 .add(LatLng(addressLatLng['lat'], addressLatLng['lng']));
             widget.addresses.add(address);
             if (widget.isLastDay) {
-              // Se è l'ultimo giorno, torna alla schermata principale
               print(widget.stops);
               googleMapsMethods.addPolylineToFirestore(
                   widget.stops,
@@ -758,7 +746,7 @@ class _DayScreenState extends State<DayScreen> {
                   widget.mode);
               Navigator.popUntil(context, (route) => route.isFirst);
             } else {
-              widget.onNext(); // Altrimenti vai al giorno successivo
+              widget.onNext();
             }
           } else {
             setState(() {

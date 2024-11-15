@@ -187,7 +187,6 @@ class UserMethods {
       mittenteQuery,
       destinatarioQuery,
       (mittenteSnap, destinatarioSnap) {
-        // Combina i documenti di entrambe le query
         return [
           ...mittenteSnap.docs,
           ...destinatarioSnap.docs,
@@ -198,11 +197,10 @@ class UserMethods {
 
   Future<void> deleteUserAccount() async {
     try {
-      // Ottieni l'utente attualmente loggato
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
-        await user.delete(); // Elimina l'utente
+        await user.delete();
         print('Account eliminato con successo.');
       } else {
         print('Nessun utente autenticato trovato.');
