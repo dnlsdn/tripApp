@@ -11,7 +11,6 @@ class FullScreenImage extends StatelessWidget {
       backgroundColor: Colors.black,
       body: GestureDetector(
         onTap: () {
-          // Torna indietro al tocco
           Navigator.pop(context);
         },
         child: Center(

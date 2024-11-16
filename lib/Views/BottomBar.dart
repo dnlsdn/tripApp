@@ -16,9 +16,10 @@ class BottomBarViewState extends State<BottomBar> {
   int currentTab = 0;
   final List<Widget> screens = [
     HomePage(),
-    //HomeChatGPT(),
     StoricoViaggi(),
-    Contacts(),
+    Contacts(
+      mode: 0,
+    ),
     Settings(),
   ];
 
@@ -59,7 +60,10 @@ class BottomBarViewState extends State<BottomBar> {
         break;
       case 0:
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => Contacts()),
+          MaterialPageRoute(
+              builder: (context) => Contacts(
+                    mode: 0,
+                  )),
         );
         break;
       case 1:

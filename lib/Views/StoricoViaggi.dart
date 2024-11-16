@@ -40,7 +40,7 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
           await googleMapsMethods.getPolylinesAsList();
       setState(() {
         allPolylines = polylines;
-        filteredPolylines = polylines; // Mostra tutte all'inizio
+        filteredPolylines = polylines;
       });
     } catch (e) {
       print('Errore durante il recupero delle polylines: $e');
@@ -51,10 +51,8 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
     String query = controller.text.toLowerCase();
     setState(() {
       if (query.isEmpty) {
-        // Mostra tutti i risultati se la ricerca è vuota
         filteredPolylines = allPolylines;
       } else {
-        // Filtra i risultati in base alla ricerca
         filteredPolylines = allPolylines
             .where((polyline) => (polyline['title'] ?? 'Percorso senza titolo')
                 .toLowerCase()
@@ -93,7 +91,6 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
                                 icon: Icon(Icons.clear),
                                 onPressed: () {
                                   controller.clear();
-                                  // Ripristina la lista completa
                                   setState(() {
                                     filteredPolylines = allPolylines;
                                   });
@@ -109,13 +106,13 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
               SizedBox(height: 10),
               Expanded(
                 child: filteredPolylines.isEmpty
-                    ? Center(child: Text('Nessun percorso trovato'))
+                    ? Center(child: Text('No Itineraries Found'))
                     : ListView.builder(
                         itemCount: filteredPolylines.length,
                         itemBuilder: (context, index) {
                           final polyline = filteredPolylines[index];
                           final title =
-                              polyline['title'] ?? 'Percorso senza titolo';
+                              polyline['title'] ?? 'err';
 
                           Timestamp timestampFirstDay = polyline['firstDay'];
                           DateTime firstDay = timestampFirstDay.toDate();
@@ -132,7 +129,7 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
                               children: [
                                 Text(
                                   polyline['description'] ??
-                                      'Modalità sconosciuta',
+                                      'err',
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),

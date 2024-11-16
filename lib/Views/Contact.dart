@@ -70,7 +70,7 @@ class _ContactState extends State<Contact> {
   @override
   Widget build(BuildContext context) {
     Utente? user = Provider.of<UserProvider>(context).getUser;
-    print('qui: ' + status);
+    
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -168,7 +168,6 @@ class _ContactState extends State<Contact> {
                           final chatId = await chatMethods.startChat(
                               user.uid, widget.profile['uid']);
 
-                          // Naviga alla schermata di chat con l'ID della chat
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -183,7 +182,6 @@ class _ContactState extends State<Contact> {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                            //shape: BoxShape.circle,
                             border: Border.all(color: Colors.blue, width: 2),
                             borderRadius: BorderRadius.circular(8)),
                         child: const Text('Contact User'),
@@ -199,7 +197,6 @@ class _ContactState extends State<Contact> {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                            //shape: BoxShape.circle,
                             border: Border.all(color: Colors.red, width: 2),
                             borderRadius: BorderRadius.circular(8)),
                         child: const Text('Report User'),
@@ -230,7 +227,6 @@ class _ContactState extends State<Contact> {
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                          //shape: BoxShape.circle,
                           border: Border.all(color: Colors.green, width: 2),
                           borderRadius: BorderRadius.circular(8)),
                       child: status == 'accepted'

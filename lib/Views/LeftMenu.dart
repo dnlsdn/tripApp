@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:travel_app/Controllers/UserMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
+import 'package:travel_app/Views/Contacts.dart';
+import 'package:travel_app/Views/NewFriend.dart';
 import 'package:travel_app/models/Utente.dart';
 
 class LeftMenu extends StatelessWidget {
@@ -9,16 +12,15 @@ class LeftMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Utente? user = Provider.of<UserProvider>(context).getUser;
+    UserMethods userMethods = UserMethods();
+
     return Drawer(
       child: Container(
-        //color: Colors.white,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                  //color: Colors.blue.shade100,
-                  ),
+              decoration: BoxDecoration(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -26,7 +28,6 @@ class LeftMenu extends StatelessWidget {
                   Text(
                     user != null ? user.username : 'Guest',
                     style: TextStyle(
-                      //color: Colors.blue.shade800,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -37,7 +38,6 @@ class LeftMenu extends StatelessWidget {
                         ? user.email
                         : 'Sign in to access more features',
                     style: TextStyle(
-                      //color: Colors.blue.shade600,
                       fontSize: 14,
                     ),
                   ),
@@ -48,28 +48,45 @@ class LeftMenu extends StatelessWidget {
               icon: Icons.home_outlined,
               text: 'Home',
               onTap: () {
-                // Add action
+                Navigator.pop(context);
               },
             ),
             buildMenuItem(
-              icon: Icons.explore_outlined,
-              text: 'Explore',
+              icon: Icons.message_outlined,
+              text: 'Messages',
               onTap: () {
-                // Add action
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => Contacts(
+                            mode: 1,
+                          )),
+                );
               },
             ),
             buildMenuItem(
-              icon: Icons.favorite_border,
-              text: 'Favorites',
+              icon: Icons.contacts_outlined,
+              text: 'Contacts',
               onTap: () {
-                // Add action
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => Contacts(
+                            mode: 2,
+                          )),
+                );
               },
             ),
             buildMenuItem(
-              icon: Icons.settings_outlined,
-              text: 'Settings',
-              onTap: () {
-                // Add action
+              icon: Icons.group_outlined,
+              text: 'Friends Requests',
+              onTap: () async {
+                List<Map<String, dynamic>> requests =
+                    await userMethods.getReceivedFriendRequests(user!.uid);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NewFriend(requests: requests),
+                  ),
+                );
               },
             ),
             const Divider(),
@@ -96,13 +113,11 @@ ListTile buildMenuItem({
     splashColor: Colors.black12,
     leading: Icon(
       icon,
-      //color: Colors.blue.shade800,
       size: 24,
     ),
     title: Text(
       text,
       style: TextStyle(
-        //color: Colors.blue.shade800,
         fontSize: 16,
       ),
     ),

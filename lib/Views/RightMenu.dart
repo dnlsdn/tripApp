@@ -77,7 +77,7 @@ class _RightMenuState extends State<RightMenu> {
     void toggleList() {
       setState(() {
         showFilterList =
-            !showFilterList; // Alterna la visualizzazione della lista
+            !showFilterList;
       });
     }
 
@@ -90,7 +90,7 @@ class _RightMenuState extends State<RightMenu> {
             content: Container(
               width: double.maxFinite,
               child: ListView.builder(
-                shrinkWrap: true, // Ridimensiona in base agli elementi
+                shrinkWrap: true,
                 itemCount: filterIconList.length,
                 itemBuilder: (context, index) {
                   return ListTile(
@@ -141,7 +141,7 @@ class _RightMenuState extends State<RightMenu> {
             content: Container(
               width: double.maxFinite,
               child: ListView.builder(
-                shrinkWrap: true, // Ridimensiona in base agli elementi
+                shrinkWrap: true,
                 itemCount: filterItineraryList.length,
                 itemBuilder: (context, index) {
                   return ListTile(
@@ -291,13 +291,11 @@ ListTile buildMenuItem({
     splashColor: Colors.black12,
     leading: Icon(
       icon,
-      //color: Colors.blue.shade800,
       size: 24,
     ),
     title: Text(
       text,
       style: TextStyle(
-        //color: Colors.blue.shade800,
         fontSize: 16,
       ),
     ),

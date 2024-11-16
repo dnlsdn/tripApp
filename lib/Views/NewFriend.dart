@@ -52,97 +52,104 @@ class _NewFriendState extends State<NewFriend> {
                 height: 18,
               ),
               Expanded(
-                child: ListView.builder(
-                    itemCount: widget.requests.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Column(
-                        children: [
-                          InkWell(
-                            highlightColor: Colors.transparent,
-                            splashColor: Colors.transparent,
-                            onTap: () async {
-                              if (widget.requests[index]['mittente'] != null) {
-                                final profileDetails =
-                                    await userProvider.getProfileDetails(
-                                        widget.requests[index]['mittente']);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        Contact(profile: profileDetails!),
+                child: widget.requests.length == 0
+                    ? Center(
+                        child: Text('Zero Requests'),
+                      )
+                    : ListView.builder(
+                        itemCount: widget.requests.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Column(
+                            children: [
+                              InkWell(
+                                highlightColor: Colors.transparent,
+                                splashColor: Colors.transparent,
+                                onTap: () async {
+                                  if (widget.requests[index]['mittente'] !=
+                                      null) {
+                                    final profileDetails =
+                                        await userProvider.getProfileDetails(
+                                            widget.requests[index]['mittente']);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            Contact(profile: profileDetails!),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.blue),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                );
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.blue),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 8,
-                                  ),
-                                  FutureBuilder<String?>(
-                                    future: UserProvider().getUsernameById(
-                                        widget.requests[index]['mittente']),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return Text(
-                                            'Caricamento...'); // Testo di caricamento
-                                      } else if (snapshot.hasError) {
-                                        return Text(
-                                            'Errore'); // Testo di errore
-                                      } else {
-                                        return Text(
-                                          snapshot.data ?? 'Anonimo',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18),
-                                        ); // Mostra il risultato o "Anonimo" se null
-                                      }
-                                    },
-                                  ),
-                                  Spacer(),
-                                  IconButton(
-                                    onPressed: () {
-                                      userMethods.acceptFriendRequest(user!.uid,
-                                          widget.requests[index]['mittente']);
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 8,
+                                      ),
+                                      FutureBuilder<String?>(
+                                        future: UserProvider().getUsernameById(
+                                            widget.requests[index]['mittente']),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return Text('Caricamento...');
+                                          } else if (snapshot.hasError) {
+                                            return Text('Errore');
+                                          } else {
+                                            return Text(
+                                              snapshot.data ?? 'Anonimo',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                      Spacer(),
+                                      IconButton(
+                                        onPressed: () {
+                                          userMethods.acceptFriendRequest(
+                                              user!.uid,
+                                              widget.requests[index]
+                                                  ['mittente']);
 
-                                      Navigator.pop(context);
-                                    },
-                                    icon: Icon(
-                                      Icons.check_circle_outline,
-                                      color: Colors.green,
-                                      size: 27,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      userMethods.deleteFriendRequest(user!.uid,
-                                          widget.requests[index]['mittente']);
+                                          Navigator.pop(context);
+                                        },
+                                        icon: Icon(
+                                          Icons.check_circle_outline,
+                                          color: Colors.green,
+                                          size: 27,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          userMethods.deleteFriendRequest(
+                                              user!.uid,
+                                              widget.requests[index]
+                                                  ['mittente']);
 
-                                      Navigator.pop(context);
-                                    },
-                                    icon: Icon(
-                                      Icons.cancel_outlined,
-                                      color: Colors.red,
-                                      size: 27,
-                                    ),
+                                          Navigator.pop(context);
+                                        },
+                                        icon: Icon(
+                                          Icons.cancel_outlined,
+                                          color: Colors.red,
+                                          size: 27,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 8,
-                          ),
-                        ],
-                      );
-                    }),
+                              SizedBox(
+                                height: 8,
+                              ),
+                            ],
+                          );
+                        }),
               ),
             ],
           ),

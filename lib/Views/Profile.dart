@@ -51,14 +51,12 @@ class _ProfileState extends State<Profile> {
       );
 
       if (pickedFile != null) {
-        // Controlla il formato dell'immagine
         final imageFile = File(pickedFile.path);
         print(
-            'Image picked: ${pickedFile.path}'); // Log del percorso dell'immagine
+            'Image picked: ${pickedFile.path}');
         print(
-            'Image type: ${pickedFile.mimeType}'); // Log del tipo dell'immagine
+            'Image type: ${pickedFile.mimeType}');
 
-        // Verifica se l'immagine è un JPEG o PNG
         if (pickedFile.mimeType == 'image/jpeg' ||
             pickedFile.mimeType == 'image/png' ||
             pickedFile.mimeType == 'image/jpg') {
@@ -66,9 +64,8 @@ class _ProfileState extends State<Profile> {
             _image = imageFile;
           });
 
-          // Carica l'immagine su Firebase o nel server
           await Provider.of<UserProvider>(context, listen: false)
-              .uploadProfilePicture(_image!); // Aggiungi await qui
+              .uploadProfilePicture(_image!);
           imageUpdated = true;
           Future.delayed(const Duration(seconds: 8), () {
             setState(() {
@@ -139,7 +136,7 @@ class _ProfileState extends State<Profile> {
           children: [
             Center(
               child: GestureDetector(
-                onTap: _pickImage, // Funzione per selezionare l'immagine
+                onTap: _pickImage,
                 child: Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -148,7 +145,7 @@ class _ProfileState extends State<Profile> {
                   child: CircleAvatar(
                     radius: 50,
                     backgroundImage: _image != null
-                        ? FileImage(_image!) // Mostra l'immagine selezionata
+                        ? FileImage(_image!)
                         : NetworkImage(user?.photoUrl ?? '') as ImageProvider,
                     backgroundColor: Colors.transparent,
                   ),

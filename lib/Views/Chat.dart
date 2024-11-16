@@ -54,7 +54,7 @@ class _ChatState extends State<Chat> {
                 }
               },
               child: CircleAvatar(
-                backgroundColor: Colors.blue, // Colore di sfondo del bottone
+                backgroundColor: Colors.blue,
                 backgroundImage: widget.profile?['photoUrl'] != ''
                     ? NetworkImage(widget.profile?['photoUrl'])
                     : null,

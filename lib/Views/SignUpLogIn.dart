@@ -97,7 +97,6 @@ class _SignUpLogInViewState extends State<SignUpLogIn> {
                           },
                           child: Text('Sign Up'),
                         ),
-                        //Spacer(),
                       ],
                     ),
                   ),
@@ -106,7 +105,7 @@ class _SignUpLogInViewState extends State<SignUpLogIn> {
                   ),
                   Expanded(
                     child: isSign ? SignUp() : LogIn(),
-                  )
+                  ),
                 ],
               ),
             ),

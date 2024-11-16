@@ -295,7 +295,6 @@ class _HomePageState extends State<HomePage> {
                         customInfoWindowController.hideInfoWindow!();
                       },
                       onMapCreated: (GoogleMapController _controller) {
-                        //controller.completecontroller);
                         mapController = _controller;
                         customInfoWindowController.googleMapController =
                             _controller;
@@ -320,15 +319,15 @@ class _HomePageState extends State<HomePage> {
                         ),
                         child: IconButton(
                           icon: AnimatedRotation(
-                            turns: rotationAngle, // L'angolo di rotazione
+                            turns: rotationAngle,
                             duration: Duration(
-                                milliseconds: 500), // Durata dell'animazione
+                                milliseconds: 500),
                             child: Icon(Icons.refresh, color: Colors.white),
                           ),
                           onPressed: () {
                             setState(() {
                               rotationAngle +=
-                                  1; // Incrementa la rotazione di 360°
+                                  1;
                             });
                             googleMapsMethods.loadDataTapMarker(markers,
                                 locations, context, null, excludeMarker);
@@ -431,14 +430,11 @@ class _HomePageState extends State<HomePage> {
                       ),
                     if (!showPlacesList)
                       Positioned(
-                        //bottom: 18,
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 15),
                           child: Align(
                             alignment: Alignment.bottomCenter,
                             child: Container(
-                              //alignment: Alignment.bottomCenter,
-                              //padding: const EdgeInsets.only(top: 18),
                               decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border:
@@ -468,8 +464,6 @@ class _HomePageState extends State<HomePage> {
                         bottom: 15,
                         right: 8,
                         child: Container(
-                          //alignment: Alignment.bottomCenter,
-                          //padding: const EdgeInsets.only(top: 18),
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.blue, width: 2),

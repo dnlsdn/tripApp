@@ -29,7 +29,7 @@ class MessageList extends StatelessWidget {
         final messages = snapshot.data!.docs;
 
         return ListView.builder(
-          reverse: true, // Mostra i messaggi più recenti in cima
+          reverse: true,
           itemCount: messages.length,
           itemBuilder: (context, index) {
             final message = messages[index].data() as Map<String, dynamic>;

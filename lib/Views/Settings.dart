@@ -24,20 +24,18 @@ class _SettingsState extends State<Settings> {
 
   Future<void> rateApp() async {
     if (await _inAppReview.isAvailable()) {
-      // Mostra il dialog di recensione nativo
       try {
         await _inAppReview.requestReview();
       } catch (e) {
         print('Error requesting review: $e');
       }
     } else {
-      // Se non disponibile, reindirizza allo store
       try {
         await _inAppReview.openStoreListing(
           appStoreId:
-              'YOUR_APPSTORE_ID', // Inserisci l'ID App Store della tua app
+              'YOUR_APPSTORE_ID',
           microsoftStoreId:
-              'YOUR_MICROSOFT_STORE_ID', // Per Windows, se necessario
+              'YOUR_MICROSOFT_STORE_ID',
         );
       } catch (e) {
         print('Error opening store listing: $e');
@@ -61,7 +59,6 @@ class _SettingsState extends State<Settings> {
         'https://apps.apple.com/us/app/my-app/id1234567890';
     const String message = 'Download Wheely!';
 
-    // Condividi il link
     await Share.share('$message\nAndroid: $appUrlAndroid\niOS: $appUrlIOS');
   }
 
@@ -76,7 +73,7 @@ class _SettingsState extends State<Settings> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Chiude il dialog senza eliminare
+                Navigator.of(context).pop();
               },
               child: const Text(
                 'Cancel',
@@ -85,8 +82,8 @@ class _SettingsState extends State<Settings> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Chiude il dialog
-                deleteAccount(); // Chiamata alla funzione per eliminare l'account
+                Navigator.of(context).pop();
+                deleteAccount();
               },
               child: const Text(
                 'Delete',
@@ -103,7 +100,7 @@ class _SettingsState extends State<Settings> {
     Utente? user = Provider.of<UserProvider>(context, listen: false).getUser;
     userMethods.deleteUserAccount();
     userMethods.deleteUserData(user!.uid);
-    // Mostra un messaggio di conferma o reindirizza a un'altra schermata
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Account successfully deleted')),
     );
@@ -267,7 +264,7 @@ class _SettingsState extends State<Settings> {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),

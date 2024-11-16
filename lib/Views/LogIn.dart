@@ -32,8 +32,7 @@ class _LogInState extends State<LogIn> {
 
     if (res == "success") {
       Utente loggedInUser = await AuthMethods().getUserDetails();
-
-      // Verifica cosa contiene loggedInUser
+      
       print("Logged in user email: ${loggedInUser.email}");
       print("Logged in user: ${loggedInUser.username}");
 
