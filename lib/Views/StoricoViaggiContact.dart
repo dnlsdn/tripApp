@@ -5,61 +5,37 @@ import 'package:intl/intl.dart';
 import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
 import 'package:travel_app/Views/DetailsPolyline.dart';
 
-class StoricoViaggi extends StatefulWidget {
-  const StoricoViaggi({super.key});
+class StoricoViaggiContact extends StatefulWidget {
+  final Map<String, dynamic> profile;
+  const StoricoViaggiContact({super.key, required this.profile});
 
   @override
-  State<StoricoViaggi> createState() => _StoricoViaggiState();
+  State<StoricoViaggiContact> createState() => _StoricoViaggiContactState();
 }
 
-class _StoricoViaggiState extends State<StoricoViaggi> {
+class _StoricoViaggiContactState extends State<StoricoViaggiContact> {
   late GoogleMapsMethods googleMapsMethods;
-  final TextEditingController controller = TextEditingController();
   List<Map<String, dynamic>> allPolylines = [];
-  List<Map<String, dynamic>> filteredPolylines = [];
 
   @override
   void initState() {
     super.initState();
+
     googleMapsMethods =
         GoogleMapsMethods(setState, CustomInfoWindowController());
     _fetchPolylines();
-    controller.addListener(_filterPolylines);
-  }
-
-  @override
-  void dispose() {
-    controller.removeListener(_filterPolylines);
-    controller.dispose();
-    super.dispose();
   }
 
   Future<void> _fetchPolylines() async {
     try {
       List<Map<String, dynamic>> polylines =
-          await googleMapsMethods.getPolylinesAsList(null);
+          await googleMapsMethods.getPolylinesAsList(widget.profile['uid']);
       setState(() {
         allPolylines = polylines;
-        filteredPolylines = polylines;
       });
     } catch (e) {
       print('Errore durante il recupero delle polylines: $e');
     }
-  }
-
-  void _filterPolylines() {
-    String query = controller.text.toLowerCase();
-    setState(() {
-      if (query.isEmpty) {
-        filteredPolylines = allPolylines;
-      } else {
-        filteredPolylines = allPolylines
-            .where((polyline) => (polyline['title'] ?? 'Percorso senza titolo')
-                .toLowerCase()
-                .contains(query))
-            .toList();
-      }
-    });
   }
 
   @override
@@ -67,52 +43,47 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Travels',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-              ),
-              const SizedBox(height: 18),
               Row(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      decoration: InputDecoration(
-                        hintText: 'Search...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        suffixIcon: controller.text.isNotEmpty
-                            ? IconButton(
-                                icon: Icon(Icons.clear),
-                                onPressed: () {
-                                  controller.clear();
-                                  setState(() {
-                                    filteredPolylines = allPolylines;
-                                  });
-                                },
-                              )
-                            : null,
-                      ),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blue, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      highlightColor: Colors.transparent,
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios_new,
+                          color: Colors.white, size: 22),
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 18),
+                  Text(
+                    widget.profile['username'] + '\'s Travels',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 27,
+                        color: Colors.white),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
-              SizedBox(height: 10),
+              SizedBox(
+                height: 18,
+              ),
               Expanded(
-                child: filteredPolylines.isEmpty
+                child: allPolylines.isEmpty
                     ? Center(child: Text('No Itineraries Found'))
                     : ListView.builder(
-                        itemCount: filteredPolylines.length,
+                        itemCount: allPolylines.length,
                         itemBuilder: (context, index) {
-                          final polyline = filteredPolylines[index];
-                          final title =
-                              polyline['title'] ?? 'err';
+                          final polyline = allPolylines[index];
+                          final title = polyline['title'] ?? 'err';
 
                           Timestamp timestampFirstDay = polyline['firstDay'];
                           DateTime firstDay = timestampFirstDay.toDate();
@@ -128,8 +99,7 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  polyline['description'] ??
-                                      'err',
+                                  polyline['description'] ?? 'err',
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),

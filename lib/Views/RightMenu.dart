@@ -76,8 +76,7 @@ class _RightMenuState extends State<RightMenu> {
 
     void toggleList() {
       setState(() {
-        showFilterList =
-            !showFilterList;
+        showFilterList = !showFilterList;
       });
     }
 
@@ -145,7 +144,13 @@ class _RightMenuState extends State<RightMenu> {
                 itemCount: filterItineraryList.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    leading: Icon(Icons.mode_standby),
+                    leading: Icon(
+                      Icons.mode_standby,
+                      color: widget.excludeItinerary
+                              .contains(filterItineraryList[index])
+                          ? Colors.green
+                          : Colors.white,
+                    ),
                     title: Text(filterItineraryList[index]),
                     onTap: () {
                       widget.excludeItinerary.clear();
@@ -206,13 +211,13 @@ class _RightMenuState extends State<RightMenu> {
           ),
           buildMenuItem(
             icon: Icons.map_outlined,
-            text: 'Map Type | $stringMap',
+            text: 'Layers | $stringMap',
             onTap: () {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text('Select Map Type'),
+                    title: Text('Select Layer'),
                     content: DropdownButton<MapType>(
                       focusColor: Colors.transparent,
                       value: widget.mapType,

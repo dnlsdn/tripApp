@@ -80,6 +80,8 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
         title: Text(
           'Itinerary: ${widget.details['title']}',
           style: TextStyle(fontWeight: FontWeight.bold),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
       body: Padding(
@@ -246,6 +248,8 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
                   Text(
                     sender,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Spacer(),
                   InkWell(

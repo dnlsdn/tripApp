@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Per selezionare l'immagine
 import 'package:provider/provider.dart';
 import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
+import 'package:travel_app/Controllers/UserMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
 import 'package:travel_app/Views/SignUpLogIn.dart';
 import 'package:travel_app/models/Utente.dart';
@@ -24,6 +25,8 @@ class _ProfileState extends State<Profile> {
   bool errorImage = false;
   late GoogleMapsMethods googleMapsMethods;
   String nTravels = 'err';
+  UserMethods userMethods = UserMethods();
+  String nContacts = 'err';
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _ProfileState extends State<Profile> {
       }
     });
     loadNTravels();
+    loadNContacts();
   }
 
   Future<void> _pickImage() async {
@@ -52,10 +56,8 @@ class _ProfileState extends State<Profile> {
 
       if (pickedFile != null) {
         final imageFile = File(pickedFile.path);
-        print(
-            'Image picked: ${pickedFile.path}');
-        print(
-            'Image type: ${pickedFile.mimeType}');
+        print('Image picked: ${pickedFile.path}');
+        print('Image type: ${pickedFile.mimeType}');
 
         if (pickedFile.mimeType == 'image/jpeg' ||
             pickedFile.mimeType == 'image/png' ||
@@ -99,6 +101,15 @@ class _ProfileState extends State<Profile> {
     final result = await googleMapsMethods.loadNumbersPolylines(null);
     setState(() {
       nTravels = result;
+    });
+  }
+
+  Future<void> loadNContacts() async {
+    Utente? user = Provider.of<UserProvider>(context, listen: false).getUser;
+    userMethods.getFriendships(user!.uid).listen((friendshipDocs) {
+      setState(() {
+        nContacts = friendshipDocs.length.toString();
+      });
     });
   }
 
@@ -208,7 +219,19 @@ class _ProfileState extends State<Profile> {
                 const Icon(Icons.travel_explore, color: Colors.grey),
                 const SizedBox(width: 10),
                 Text(
-                  'n° Travels: $nTravels',
+                  'Number of Travels: $nTravels',
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Icon(Icons.group, color: Colors.grey),
+                const SizedBox(width: 10),
+                Text(
+                  'Numbers of Contacts: $nContacts',
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold),
                 ),

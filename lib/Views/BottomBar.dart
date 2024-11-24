@@ -31,7 +31,7 @@ class BottomBarViewState extends State<BottomBar> {
   List<IconData> listOfIcons = [
     Icons.home_rounded,
     Icons.explore,
-    Icons.hiking,
+    Icons.group,
     Icons.settings,
   ];
 

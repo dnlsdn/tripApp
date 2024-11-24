@@ -69,6 +69,9 @@ class GoogleMapsMethods {
       case 'warning':
         assetPath = 'assets/warning.png';
         break;
+      case 'accommodation':
+        assetPath = 'assets/accommodation.png';
+        break;
       case 'defaut':
       default:
         assetPath = 'assets/warning.png';
@@ -809,28 +812,49 @@ class GoogleMapsMethods {
     return '0';
   }
 
-  Future<List<Map<String, dynamic>>> getPolylinesAsList() async {
-    CollectionReference polylinesCollection =
-        FirebaseFirestore.instance.collection('polylines');
+  Future<List<Map<String, dynamic>>> getPolylinesAsList(String? uidExt) async {
+    if (uidExt == null) {
+      CollectionReference polylinesCollection =
+          FirebaseFirestore.instance.collection('polylines');
 
-    User? user = FirebaseAuth.instance.currentUser;
+      User? user = FirebaseAuth.instance.currentUser;
 
-    if (user == null) {
-      throw Exception('Utente non autenticato');
+      if (user == null) {
+        throw Exception('Utente non autenticato');
+      }
+
+      String uid = user.uid;
+
+      QuerySnapshot querySnapshot =
+          await polylinesCollection.where('mittente', isEqualTo: uid).get();
+
+      List<Map<String, dynamic>> polylinesList = querySnapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>,
+        };
+      }).toList();
+
+      return polylinesList;
+    } else {
+      CollectionReference polylinesCollection =
+          FirebaseFirestore.instance.collection('polylines');
+
+      if (uidExt == '') {
+        throw Exception('Utente non autenticato');
+      }
+
+      QuerySnapshot querySnapshot =
+          await polylinesCollection.where('mittente', isEqualTo: uidExt).get();
+
+      List<Map<String, dynamic>> polylinesList = querySnapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>,
+        };
+      }).toList();
+
+      return polylinesList;
     }
-
-    String uid = user.uid;
-
-    QuerySnapshot querySnapshot =
-        await polylinesCollection.where('mittente', isEqualTo: uid).get();
-
-    List<Map<String, dynamic>> polylinesList = querySnapshot.docs.map((doc) {
-      return {
-        'id': doc.id,
-        ...doc.data() as Map<String, dynamic>,
-      };
-    }).toList();
-
-    return polylinesList;
   }
 }

@@ -61,22 +61,22 @@ class _AddMarkerState extends State<AddMarker> {
           height: 580,
           child: Wrap(
             children: <Widget>[
-              ListTile(
-                leading: Icon(Icons.camera_alt, color: Colors.white),
-                title: Text('Place to take a photo!',
-                    style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  setState(() {
-                    imageString = 'camera';
-                    markerType = 'camera';
-                    titleController.text = 'Place to take a pic';
-                  });
-                  Navigator.of(context).pop();
-                },
-              ),
-              Divider(
-                height: 0,
-              ),
+              // ListTile(
+              //   leading: Icon(Icons.camera_alt, color: Colors.white),
+              //   title: Text('Place to take a photo!',
+              //       style: TextStyle(color: Colors.white)),
+              //   onTap: () {
+              //     setState(() {
+              //       imageString = 'camera';
+              //       markerType = 'camera';
+              //       titleController.text = 'Place to take a pic';
+              //     });
+              //     Navigator.of(context).pop();
+              //   },
+              // ),
+              // Divider(
+              //   height: 0,
+              // ),
               ListTile(
                 leading: Icon(Icons.cabin, color: Colors.white),
                 title: Text('Place to camp!',
@@ -85,7 +85,7 @@ class _AddMarkerState extends State<AddMarker> {
                   setState(() {
                     imageString = 'camping';
                     markerType = 'camping';
-                    titleController.text = 'Place to camp';
+                    titleController.text = 'Camping Spot';
                   });
                   Navigator.of(context).pop();
                 },
@@ -95,13 +95,13 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.landscape, color: Colors.white),
-                title: Text('Place to see a landscape!',
+                title: Text('Point of View!',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
                     imageString = 'landscape';
                     markerType = 'landscape';
-                    titleController.text = 'Landscape to see';
+                    titleController.text = 'Point of View';
                   });
                   Navigator.of(context).pop();
                 },
@@ -111,13 +111,13 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.remove_road, color: Colors.white),
-                title:
-                    Text('Closed Way!', style: TextStyle(color: Colors.white)),
+                title: Text('Road Closure!',
+                    style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
                     imageString = 'roadClosed';
                     markerType = 'roadClosed';
-                    titleController.text = 'Closed Way';
+                    titleController.text = 'Road Closure';
                   });
                   Navigator.of(context).pop();
                 },
@@ -159,13 +159,13 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.restaurant, color: Colors.white),
-                title: Text('Restaurant Place!',
+                title: Text('Refreshment or Restaurant!',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
                     imageString = 'restaurant';
                     markerType = 'restaurant';
-                    titleController.text = 'Restaurant';
+                    titleController.text = 'Refreshment/Restaurant';
                   });
                   Navigator.of(context).pop();
                 },
@@ -182,6 +182,22 @@ class _AddMarkerState extends State<AddMarker> {
                     imageString = 'warning';
                     markerType = 'warning';
                     titleController.text = 'Warning';
+                  });
+                  Navigator.of(context).pop();
+                },
+              ),
+              Divider(
+                height: 0,
+              ),
+              ListTile(
+                leading: Icon(Icons.house, color: Colors.white),
+                title: Text('Place for Accomodation!',
+                    style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  setState(() {
+                    imageString = 'accommodation';
+                    markerType = 'accommodation';
+                    titleController.text = 'Accommodation';
                   });
                   Navigator.of(context).pop();
                 },
@@ -426,7 +442,17 @@ class _AddMarkerState extends State<AddMarker> {
                 padding: const EdgeInsets.all(8),
                 child: InkWell(
                   onTap: () => showPicker(context),
-                  child: Text(markerType, style: TextStyle(fontSize: 18)),
+                  child: Text(
+                      markerType == 'landscape'
+                          ? 'Point of View'
+                          : markerType == 'roadClosed'
+                              ? 'Road Closure'
+                              : markerType == 'restaurant'
+                                  ? 'Refreshment/Restaurant'
+                                  : markerType == 'camping'
+                                      ? 'Camping Spot'
+                                      : markerType,
+                      style: TextStyle(fontSize: 18)),
                 ),
               ),
             ),

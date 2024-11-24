@@ -34,7 +34,7 @@ class _ContactsState extends State<Contacts> {
     'See Recent Messages',
     'See Friends\' List',
   ];
-  bool seeMessages = true;
+  bool seeMessages = false;
   late var mittenteQuery;
   late var destinatarioQuery;
 
@@ -104,11 +104,11 @@ class _ContactsState extends State<Contacts> {
                               ),
                             ),
                           ),
-                          SizedBox(width: 8),
-                          _buildActionButton(Icons.filter_list, Colors.blue,
-                              () {
-                            showPopupWithFilters(context);
-                          }),
+                          // SizedBox(width: 8),
+                          // _buildActionButton(Icons.filter_list, Colors.blue,
+                          //     () {
+                          //   showPopupWithFilters(context);
+                          // }),
                           SizedBox(width: 8),
                           _buildActionButton(Icons.person_add, Colors.green,
                               () async {
@@ -245,7 +245,11 @@ class _ContactsState extends State<Contacts> {
                                                 highlightColor:
                                                     Colors.transparent,
                                                 splashColor: Colors.transparent,
-                                                onTap: () {},
+                                                onTap: () {
+                                                  userMethods.deleteFriendship(
+                                                      user.uid,
+                                                      friendDetails['uid']);
+                                                },
                                                 child: Container(
                                                   padding:
                                                       const EdgeInsets.all(5),

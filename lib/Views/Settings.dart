@@ -32,10 +32,8 @@ class _SettingsState extends State<Settings> {
     } else {
       try {
         await _inAppReview.openStoreListing(
-          appStoreId:
-              'YOUR_APPSTORE_ID',
-          microsoftStoreId:
-              'YOUR_MICROSOFT_STORE_ID',
+          appStoreId: 'YOUR_APPSTORE_ID',
+          microsoftStoreId: 'YOUR_MICROSOFT_STORE_ID',
         );
       } catch (e) {
         print('Error opening store listing: $e');
@@ -235,6 +233,34 @@ class _SettingsState extends State<Settings> {
                       },
                       icon: Icon(
                         Icons.ios_share,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Divider(),
+              Row(
+                children: [
+                  Icon(Icons.description_outlined),
+                  SizedBox(
+                    width: 8,
+                  ),
+                  Text(
+                    'Help & Feedback',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  Spacer(),
+                  Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blue),
+                        borderRadius: BorderRadius.circular(68)),
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: Icon(
+                        Icons.description_outlined,
                       ),
                     ),
                   ),

@@ -32,7 +32,7 @@ class _LogInState extends State<LogIn> {
 
     if (res == "success") {
       Utente loggedInUser = await AuthMethods().getUserDetails();
-      
+
       print("Logged in user email: ${loggedInUser.email}");
       print("Logged in user: ${loggedInUser.username}");
 
@@ -112,13 +112,15 @@ class _LogInState extends State<LogIn> {
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.blue, width: 5)),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   backgroundColor: Color.fromARGB(238, 255, 255, 255),
                   radius: 64,
-                  child: Icon(
-                    Icons.person,
-                    size: 88,
-                    color: Colors.black,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/logoWheely.png',
+                      //color: Colors.transparent,
+                      fit: BoxFit.fill,
+                    ),
                   ),
                 ),
               ),

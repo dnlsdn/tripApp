@@ -13,6 +13,8 @@ import 'package:travel_app/Utils/FullScreenImage.dart';
 import 'package:travel_app/Views/Chat.dart';
 import 'package:travel_app/Views/MessageList.dart';
 import 'package:travel_app/Views/ReportUser.dart';
+import 'package:travel_app/Views/StoricoViaggi.dart';
+import 'package:travel_app/Views/StoricoViaggiContact.dart';
 import 'package:travel_app/models/Utente.dart';
 
 class Contact extends StatefulWidget {
@@ -33,6 +35,7 @@ class _ContactState extends State<Contact> {
   String status = '';
   ChatMethods chatMethods = ChatMethods();
   String destinatario = '';
+  String nContacts = '';
 
   @override
   void initState() {
@@ -43,6 +46,7 @@ class _ContactState extends State<Contact> {
         GoogleMapsMethods(setState, CustomInfoWindowController());
     loadNTravels();
     loadStatus();
+    loadNContacts();
   }
 
   Future<void> loadNTravels() async {
@@ -67,10 +71,18 @@ class _ContactState extends State<Contact> {
     }
   }
 
+  Future<void> loadNContacts() async {
+    userMethods.getFriendships(widget.profile['uid']).listen((friendshipDocs) {
+      setState(() {
+        nContacts = friendshipDocs.length.toString();
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Utente? user = Provider.of<UserProvider>(context).getUser;
-    
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -151,8 +163,45 @@ class _ContactState extends State<Contact> {
               //   height: 18,
               // ),
               Text(
-                "N° Travels: $nTravels",
+                "Number of Travels: $nTravels",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              Divider(
+                height: 18,
+              ),
+              Text(
+                "Number of Contacts: $nContacts",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              Divider(
+                height: 18,
+              ),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () async {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => StoricoViaggiContact(
+                            profile: widget.profile,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Icon(
+                        Icons.info_outline,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    "Travel History",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
               Spacer(),
               if (user!.uid != widget.profile['uid'])

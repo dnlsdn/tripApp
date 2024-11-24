@@ -227,12 +227,18 @@ class _HomePageState extends State<HomePage> {
                         border: Border.all(color: Colors.white)),
                     child: IconButton(
                       highlightColor: Colors.transparent,
-                      icon: Icon(Icons.add_location_alt, color: Colors.white),
+                      icon: Icon(
+                        Icons.share_location,
+                        color: Colors.white,
+                        size: 35,
+                      ),
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const AddMarker()));
+                        // Navigator.push(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //         builder: (context) => const AddMarker()));
+                        googleMapsMethods.getCurrentLocation(
+                            currentPosition, mapController!);
                       },
                     ),
                   ),
@@ -320,14 +326,12 @@ class _HomePageState extends State<HomePage> {
                         child: IconButton(
                           icon: AnimatedRotation(
                             turns: rotationAngle,
-                            duration: Duration(
-                                milliseconds: 500),
+                            duration: Duration(milliseconds: 500),
                             child: Icon(Icons.refresh, color: Colors.white),
                           ),
                           onPressed: () {
                             setState(() {
-                              rotationAngle +=
-                                  1;
+                              rotationAngle += 1;
                             });
                             googleMapsMethods.loadDataTapMarker(markers,
                                 locations, context, null, excludeMarker);
@@ -463,6 +467,8 @@ class _HomePageState extends State<HomePage> {
                       Positioned(
                         bottom: 15,
                         right: 8,
+                        height: 62,
+                        width: 62,
                         child: Container(
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
@@ -470,13 +476,15 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.black87),
                           child: InkWell(
                             onTap: () {
-                              googleMapsMethods.getCurrentLocation(
-                                  currentPosition, mapController!);
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const AddMarker()));
                             },
                             child: Icon(
-                              Icons.share_location,
+                              Icons.add_location_alt,
                               color: Colors.white,
-                              size: 58,
+                              size: 38,
                             ),
                           ),
                         ),

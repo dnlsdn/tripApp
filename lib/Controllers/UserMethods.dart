@@ -218,4 +218,27 @@ class UserMethods {
       print('Errore durante la rimozione dei dati utente: $e');
     }
   }
+
+  Future<void> deleteFriendship(String currentUserId, String friendUserId) async {
+  try {
+    final docId1 = '${currentUserId}_$friendUserId';
+    final docId2 = '${friendUserId}_$currentUserId';
+    
+    final doc1Snapshot = await _firestore.collection('friendships').doc(docId1).get();
+    final doc2Snapshot = await _firestore.collection('friendships').doc(docId2).get();
+
+    if (doc1Snapshot.exists) {
+      await _firestore.collection('friendships').doc(docId1).delete();
+      print('Amicizia eliminata: $docId1');
+    } else if (doc2Snapshot.exists) {
+      await _firestore.collection('friendships').doc(docId2).delete();
+      print('Amicizia eliminata: $docId2');
+    } else {
+      print('Nessuna relazione di amicizia trovata tra $currentUserId e $friendUserId.');
+    }
+  } catch (e) {
+    print('Errore durante l\'eliminazione dell\'amicizia: $e');
+  }
+}
+
 }
