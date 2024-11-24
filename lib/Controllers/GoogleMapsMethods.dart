@@ -857,4 +857,37 @@ class GoogleMapsMethods {
       return polylinesList;
     }
   }
+
+  Future<void> addGPXToFirestore(
+    List<LatLng> gpxPoints,
+    String title,
+    String description,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    String uid = user!.uid;
+    CollectionReference polylines =
+        FirebaseFirestore.instance.collection('polylines');
+
+    List<Map<String, double>> stopsMap = gpxPoints
+        .map((stop) => {'latitude': stop.latitude, 'longitude': stop.longitude})
+        .toList();
+
+    return polylines
+        .add({
+          'stops': stopsMap,
+          'title': title,
+          'mittente': uid,
+          'description': description,
+          'id': generateFirestoreId(20),
+          'addresses': [],
+          'lastDay': endDate,
+          'firstDay': startDate,
+          'mode': 'gpx',
+        })
+        .then((value) => print("GPX Polyline Added"))
+        .catchError((error) => print("Failed to add GPX polyline: $error"));
+  }
 }

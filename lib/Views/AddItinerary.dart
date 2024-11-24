@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:travel_app/Controllers/GPXMethods.dart';
 import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
 import 'package:travel_app/Views/LeftMenu.dart';
 
@@ -30,6 +32,9 @@ class _AddItineraryState extends State<AddItinerary> {
   String mode = "cycle";
   IconData modeIcon = Icons.mode_standby;
   bool isGPX = false;
+  GPXMethods gpxMethods = GPXMethods();
+  List<LatLng> gpxPoints = [];
+  String gpxFileName = "";
 
   @override
   void initState() {
@@ -256,7 +261,9 @@ class _AddItineraryState extends State<AddItinerary> {
                       },
                       child: Center(
                         child: Text(
-                          'Click here if you want to upload a GPX file!',
+                          !isGPX
+                              ? 'Click here if you want to upload a GPX file!'
+                              : 'Click here if you want to upload a Classic Itinerary!',
                           style: TextStyle(color: Colors.blue),
                         ),
                       ),
@@ -396,89 +403,88 @@ class _AddItineraryState extends State<AddItinerary> {
                             ),
                           ),
                         ),
-                    ] else
-                      Text('ciao'),
-                    // SizedBox(
-                    //   height: 18,
-                    // ),
-                    // if (!showPlacesList)
-                    //   Text('Mode',
-                    //       style: TextStyle(
-                    //           fontSize: 22, fontWeight: FontWeight.bold)),
-                    // SizedBox(
-                    //   height: 8,
-                    // ),
-                    // if (!showPlacesList)
-                    //   Container(
-                    //     decoration: BoxDecoration(
-                    //         border: Border.all(color: Colors.grey),
-                    //         borderRadius: BorderRadius.circular(8)),
-                    //     child: buildMenuItem(
-                    //         icon: modeIcon,
-                    //         text: mode.isNotEmpty ? mode : 'Select Mode Type',
-                    //         onTap: () {
-                    //           showDialog(
-                    //             context: context,
-                    //             builder: (BuildContext context) {
-                    //               return AlertDialog(
-                    //                 title: Text('Select Mode Type'),
-                    //                 content: DropdownButton<String>(
-                    //                   focusColor: Colors.transparent,
-                    //                   value: mode.isNotEmpty ? mode : null,
-                    //                   onChanged: (String? newValue) {
-                    //                     setState(() {
-                    //                       mode = newValue!;
-                    //                     });
-                    //                     Navigator.of(context).pop();
-                    //                   },
-                    //                   items: <DropdownMenuItem<String>>[
-                    //                     DropdownMenuItem(
-                    //                       value: 'Foot',
-                    //                       child: Text('Foot'),
-                    //                       onTap: () {
-                    //                         mode = 'foot';
-                    //                         modeIcon = Icons.hiking;
-                    //                       },
-                    //                     ),
-                    //                     DropdownMenuItem(
-                    //                       value: 'Cycle',
-                    //                       child: Text('Cycle'),
-                    //                       onTap: () {
-                    //                         mode = 'cycle';
-                    //                         modeIcon = Icons.directions_bike;
-                    //                       },
-                    //                     ),
-                    //                     DropdownMenuItem(
-                    //                       value: 'Car',
-                    //                       child: Text('Car'),
-                    //                       onTap: () {
-                    //                         mode = 'car';
-                    //                         modeIcon = Icons.directions_car;
-                    //                       },
-                    //                     ),
-                    //                     DropdownMenuItem(
-                    //                       value: 'Moto',
-                    //                       child: Text('Moto'),
-                    //                       onTap: () {
-                    //                         mode = 'moto';
-                    //                         modeIcon = Icons.motorcycle;
-                    //                       },
-                    //                     ),
-                    //                     DropdownMenuItem(
-                    //                       value: 'Hybrid',
-                    //                       child: Text('Hybrid'),
-                    //                       onTap: () {
-                    //                         mode = 'hybrid';
-                    //                         modeIcon = Icons.mode_standby;
-                    //                       },
-                    //                     ),
-                    //                   ],
-                    //                 ),
-                    //               );
-                    //             },
-                    //           );
-                    //         }),
-                    //   ),
+                    ] else if (isGPX) ...[
+                      //SizedBox(height: 18),
+                      Center(
+                        child: InkWell(
+                          onTap: () async {
+                            File? gpxFile = await gpxMethods.pickGPXFile();
+                            if (gpxFile != null) {
+                              gpxPoints =
+                                  await gpxMethods.parseGPXFile(gpxFile);
+                              setState(() {
+                                gpxFileName = gpxFile.path.split('/').last;
+                              });
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                                border: Border.all(color: Colors.blue),
+                                borderRadius: BorderRadius.circular(8)),
+                            child: Text(gpxFileName.isEmpty
+                                ? 'Upload GPX File'
+                                : gpxFileName),
+                          ),
+                        ),
+                      ),
+                      //SizedBox(height: 18),
+                      if (gpxPoints.isNotEmpty)
+                        Center(
+                          child: Text(
+                            'GPX File Loaded with ${gpxPoints.length} points.',
+                            style: TextStyle(color: Colors.green),
+                          ),
+                        ),
+                      SizedBox(height: 18),
+                      // Title
+                      Text('Title',
+                          style: TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 8),
+                      TextField(
+                        controller: titleController,
+                        cursorColor: Colors.white,
+                        decoration: InputDecoration(
+                          labelText: 'Itinerary Title',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0)),
+                          labelStyle: TextStyle(color: Colors.white),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.blue, width: 2.0),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.grey, width: 1.0),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 18),
+                      // Description
+                      Text('Description',
+                          style: TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      SizedBox(height: 8),
+                      TextField(
+                        controller: descriptionController,
+                        cursorColor: Colors.white,
+                        decoration: InputDecoration(
+                          labelText: 'Itinerary Description',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.0)),
+                          labelStyle: TextStyle(color: Colors.white),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.blue, width: 2.0),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.grey, width: 1.0),
+                          ),
+                        ),
+                      ),
+                    ],
                     if (alertEmpty)
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -506,43 +512,78 @@ class _AddItineraryState extends State<AddItinerary> {
               onTap: isKeyboardVisible
                   ? null
                   : () async {
-                      if (titleController.text != "" &&
-                          descriptionController.text != "" &&
-                          startDate != null &&
-                          endDate != null &&
-                          address != "" &&
-                          mode != "") {
-                        Map<String, dynamic> addressLatLng =
-                            await googleMapsMethods
-                                .getLatLngFromAddress(address);
-                        stops.add(
-                            LatLng(addressLatLng['lat'], addressLatLng['lng']));
-                        addresses.add(address);
-                        navigateToDay(currentDay);
-                      } else {
-                        print('no');
-                        setState(() {
-                          alertEmpty = true;
-                        });
-                        Timer(Duration(seconds: 5), () {
+                      if (isGPX) {
+                        if (gpxPoints.isNotEmpty &&
+                            titleController.text.isNotEmpty &&
+                            descriptionController.text.isNotEmpty &&
+                            startDate != null &&
+                            endDate != null) {
+                          // Save GPX data to Firestore
+                          googleMapsMethods.addGPXToFirestore(
+                            gpxPoints,
+                            titleController.text,
+                            descriptionController.text,
+                            startDate!,
+                            endDate!,
+                          );
+                          Navigator.pop(context);
+                        } else {
                           setState(() {
-                            alertEmpty = false;
+                            alertEmpty = true;
                           });
-                        });
+                          Timer(Duration(seconds: 5), () {
+                            setState(() {
+                              alertEmpty = false;
+                            });
+                          });
+                        }
+                      } else {
+                        // Existing code for non-GPX itineraries
+                        if (titleController.text != "" &&
+                            descriptionController.text != "" &&
+                            startDate != null &&
+                            endDate != null &&
+                            address != "" &&
+                            mode != "") {
+                          Map<String, dynamic> addressLatLng =
+                              await googleMapsMethods
+                                  .getLatLngFromAddress(address);
+                          stops.add(LatLng(
+                              addressLatLng['lat'], addressLatLng['lng']));
+                          addresses.add(address);
+                          navigateToDay(currentDay);
+                        } else {
+                          setState(() {
+                            alertEmpty = true;
+                          });
+                          Timer(Duration(seconds: 5), () {
+                            setState(() {
+                              alertEmpty = false;
+                            });
+                          });
+                        }
                       }
                     },
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: titleController.text != "" &&
-                            descriptionController.text != "" &&
-                            startDate != null &&
-                            endDate != null &&
-                            address != "" &&
-                            mode != ""
-                        ? Colors.blue
-                        : Colors.white.withOpacity(0.7),
+                    color: (isGPX
+                        ? (gpxPoints.isNotEmpty &&
+                                titleController.text.isNotEmpty &&
+                                descriptionController.text.isNotEmpty &&
+                                startDate != null &&
+                                endDate != null)
+                            ? Colors.blue
+                            : Colors.white.withOpacity(0.7)
+                        : (titleController.text != "" &&
+                                descriptionController.text != "" &&
+                                startDate != null &&
+                                endDate != null &&
+                                address != "" &&
+                                mode != "")
+                            ? Colors.blue
+                            : Colors.white.withOpacity(0.7)),
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(8),
@@ -551,14 +592,22 @@ class _AddItineraryState extends State<AddItinerary> {
                   'Continue',
                   style: TextStyle(
                       fontSize: 22,
-                      color: titleController.text != "" &&
-                              descriptionController.text != "" &&
-                              startDate != null &&
-                              endDate != null &&
-                              address != "" &&
-                              mode != ""
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.7),
+                      color: (isGPX
+                          ? (gpxPoints.isNotEmpty &&
+                                  titleController.text.isNotEmpty &&
+                                  descriptionController.text.isNotEmpty &&
+                                  startDate != null &&
+                                  endDate != null)
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.7)
+                          : (titleController.text != "" &&
+                                  descriptionController.text != "" &&
+                                  startDate != null &&
+                                  endDate != null &&
+                                  address != "" &&
+                                  mode != "")
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.7)),
                       fontWeight: FontWeight.bold),
                 ),
               ),

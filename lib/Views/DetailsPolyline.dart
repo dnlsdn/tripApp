@@ -245,11 +245,15 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
                     'Sender: ',
                     style: TextStyle(fontSize: 22),
                   ),
-                  Text(
-                    sender,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Container(
+                    width: 138,
+                    child: Text(
+                      sender,
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   Spacer(),
                   InkWell(
@@ -307,10 +311,22 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
             Divider(
               height: 38,
             ),
-            Text(
-              'Travel Stops',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
-            ),
+            if (widget.details['mode'] != 'gpx') ...[
+              Text(
+                'Travel Stops',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              ),
+            ],
+            if (widget.details['mode'] == 'gpx') ...[
+              SizedBox(
+                height: 18,
+              ),
+              Text(
+                textAlign: TextAlign.center,
+                'This is a GPX Itinerary, contact the sender to know more!',
+                style: TextStyle(fontSize: 18),
+              ),
+            ],
             Expanded(
               child: ListView.builder(
                 itemCount: widget.details['addresses'].length,
