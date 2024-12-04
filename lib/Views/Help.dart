@@ -37,7 +37,7 @@ class _HelpState extends State<Help> {
                   ),
                   const SizedBox(width: 18),
                   const Text(
-                    'Report User',
+                    'Help & Feedback',
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 27,
@@ -53,7 +53,7 @@ class _HelpState extends State<Help> {
                 cursorColor: Colors.white,
                 style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: 'Email Body',
+                  labelText: 'Insert your name and Write your feedback',
                   labelStyle: TextStyle(color: Colors.white),
                   border: OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
@@ -79,7 +79,7 @@ class _HelpState extends State<Help> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
-                      'Report User',
+                      'Send Feedback',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
