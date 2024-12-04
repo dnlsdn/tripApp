@@ -1,38 +1,48 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:travel_app/Controllers/NotificationMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
 
 class ChatMethods {
-  Future<void> sendMessage(String chatId, String text) async {
+  final NotificationMethods notificationService = NotificationMethods();
+
+  Future<void> sendMessage(
+      String chatId, String text, String recipientId) async {
     final user = FirebaseAuth.instance.currentUser;
-    UserProvider userProvider = UserProvider();
 
     if (user == null) return;
-
-    String? username = await userProvider.getUsernameById(user.uid);
-
-    final message = {
-      'senderId': user.uid,
-      'senderUsername': username,
-      'text': text,
-      'timestamp': FieldValue.serverTimestamp(),
-      'read': false,
-    };
 
     await FirebaseFirestore.instance
         .collection('chats')
         .doc(chatId)
         .collection('messages')
-        .add(message);
-
-    await FirebaseFirestore.instance.collection('chats').doc(chatId).update({
-      'lastMessage': text,
-      'lastMessageTimestamp': FieldValue.serverTimestamp(),
-      'lastMessageSenderId':
-          user.uid,
-      'lastMessageRead':
-          false,
+        .add({
+      'senderId': user.uid,
+      'text': text,
+      'timestamp': FieldValue.serverTimestamp(),
+      'read': false,
     });
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(recipientId)
+        .get();
+    String? token;
+
+    if (!Platform.isIOS) {
+      token = doc['fcmToken'];
+    }
+
+    if (token != null) {
+      await notificationService.sendNotification(
+        token: token,
+        title: 'Nuovo messaggio',
+        body: text,
+      );
+    }
   }
 
   Stream<List<Map<String, dynamic>>> getMessages(String chatId) {
@@ -86,7 +96,7 @@ class ChatMethods {
           return doc.id;
         }
       }
-      
+
       return null;
     } catch (e) {
       print("Errore nel trovare la chat: $e");

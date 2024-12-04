@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:travel_app/models/Utente.dart' as model;
 
 class AuthMethods {
@@ -75,5 +78,29 @@ class AuthMethods {
       res = err.toString();
     }
     return res;
+  }
+
+  Future<void> updateUserToken(String userId) async {
+    try {
+      // Ottieni il token FCM solo se non sei su un simulatore iOS
+      if (!(Platform.isIOS &&
+          await FirebaseMessaging.instance.getAPNSToken() == null)) {
+        final token = await FirebaseMessaging.instance.getToken();
+        print('FCM Token: $token');
+
+        if (token != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .update({
+            'fcmToken': token,
+          });
+        }
+      } else {
+        print('Simulatore iOS rilevato: Ignoro il token APNs');
+      }
+    } catch (e) {
+      print('Errore durante l\'ottenimento del token: $e');
+    }
   }
 }

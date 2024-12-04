@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
@@ -10,15 +13,27 @@ import 'package:travel_app/Views/splashScreen.dart';
 import 'package:travel_app/firebase_options.dart';
 import 'package:travel_app/models/Utente.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print('Messaggio ricevuto in background: ${message.messageId}');
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    await _configureFirebaseMessaging();
   } catch (e) {
     print('Errore durante l\'inizializzazione di Firebase: $e');
   }
+
   runApp(
     MultiProvider(
       providers: [
@@ -29,6 +44,44 @@ Future<void> main() async {
   );
 }
 
+Future<void> _configureFirebaseMessaging() async {
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    print('Permessi di notifica concessi');
+  } else {
+    print('Permessi di notifica negati o provvisori concessi');
+  }
+
+  if (!Platform.isIOS) {
+    messaging.getToken().then((token) {
+      if (token != null) {
+        print('FCM Token: $token');
+      }
+    });
+  }
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    if (message.notification != null) {
+      print('Messaggio ricevuto in foreground: ${message.notification!.title}');
+    }
+  });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    print('Notifica aperta: ${message.notification?.title}');
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const BottomBar()),
+      (route) => false,
+    );
+  });
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -37,26 +90,32 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasData && snapshot.data != null) {
-            // Carico i dati dell'utente direttamente nel builder
-            _loadUserData(snapshot.data!, context);
-            return SplashScreen();
-          }
-
-          // L'utente non è autenticato
-          return const SignUpLogIn();
-        },
-      ),
+      navigatorKey: navigatorKey,
+      home: AuthHandler(),
       routes: {
         '/home': (context) => const BottomBar(),
         '/signUp': (context) => const SignUpLogIn(),
+      },
+    );
+  }
+}
+
+class AuthHandler extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasData && snapshot.data != null) {
+          _loadUserData(snapshot.data!, context);
+          return SplashScreen();
+        }
+
+        return const SignUpLogIn();
       },
     );
   }
@@ -76,7 +135,6 @@ class MyApp extends StatelessWidget {
       photoUrl: photoUrl,
     );
 
-    // Non serve mounted qui, poiché il contesto è ancora sicuro in questo punto
     Provider.of<UserProvider>(context, listen: false).setUser(utente);
     print('UTENTE: ${utente.username}');
   }

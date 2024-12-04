@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:travel_app/Controllers/NotificationMethods.dart';
 
 class UserMethods {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final NotificationMethods notificationService = NotificationMethods();
 
   Future<List<String>> getSuggestions(String query) async {
     if (query.isEmpty) return [];
@@ -37,13 +42,32 @@ class UserMethods {
 
   Future<void> sendFriendRequest(
       String currentUserId, String friendUserId) async {
-    final docId = '${currentUserId}_$friendUserId';
-
-    await FirebaseFirestore.instance.collection('friendships').doc(docId).set({
+    await FirebaseFirestore.instance
+        .collection('friendships')
+        .doc('${currentUserId}_$friendUserId')
+        .set({
       'mittente': currentUserId,
       'destinatario': friendUserId,
       'status': 'pending',
     });
+
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(friendUserId)
+        .get();
+    String? token;
+
+    if (!Platform.isIOS) {
+      token = doc['fcmToken'];
+    }
+
+    if (token != null) {
+      await notificationService.sendNotification(
+        token: token,
+        title: 'Nuova richiesta di amicizia',
+        body: 'Hai ricevuto una nuova richiesta di amicizia!',
+      );
+    }
   }
 
   Future<String> getFriendshipStatus(
@@ -219,26 +243,29 @@ class UserMethods {
     }
   }
 
-  Future<void> deleteFriendship(String currentUserId, String friendUserId) async {
-  try {
-    final docId1 = '${currentUserId}_$friendUserId';
-    final docId2 = '${friendUserId}_$currentUserId';
-    
-    final doc1Snapshot = await _firestore.collection('friendships').doc(docId1).get();
-    final doc2Snapshot = await _firestore.collection('friendships').doc(docId2).get();
+  Future<void> deleteFriendship(
+      String currentUserId, String friendUserId) async {
+    try {
+      final docId1 = '${currentUserId}_$friendUserId';
+      final docId2 = '${friendUserId}_$currentUserId';
 
-    if (doc1Snapshot.exists) {
-      await _firestore.collection('friendships').doc(docId1).delete();
-      print('Amicizia eliminata: $docId1');
-    } else if (doc2Snapshot.exists) {
-      await _firestore.collection('friendships').doc(docId2).delete();
-      print('Amicizia eliminata: $docId2');
-    } else {
-      print('Nessuna relazione di amicizia trovata tra $currentUserId e $friendUserId.');
+      final doc1Snapshot =
+          await _firestore.collection('friendships').doc(docId1).get();
+      final doc2Snapshot =
+          await _firestore.collection('friendships').doc(docId2).get();
+
+      if (doc1Snapshot.exists) {
+        await _firestore.collection('friendships').doc(docId1).delete();
+        print('Amicizia eliminata: $docId1');
+      } else if (doc2Snapshot.exists) {
+        await _firestore.collection('friendships').doc(docId2).delete();
+        print('Amicizia eliminata: $docId2');
+      } else {
+        print(
+            'Nessuna relazione di amicizia trovata tra $currentUserId e $friendUserId.');
+      }
+    } catch (e) {
+      print('Errore durante l\'eliminazione dell\'amicizia: $e');
     }
-  } catch (e) {
-    print('Errore durante l\'eliminazione dell\'amicizia: $e');
   }
-}
-
 }

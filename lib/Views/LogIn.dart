@@ -21,6 +21,7 @@ class _LogInState extends State<LogIn> {
   bool isShow = false;
   bool isError = false;
   bool isLoading = false;
+  AuthMethods authMethods = AuthMethods();
 
   void loginUser() async {
     setState(() {
@@ -32,6 +33,7 @@ class _LogInState extends State<LogIn> {
 
     if (res == "success") {
       Utente loggedInUser = await AuthMethods().getUserDetails();
+      await authMethods.updateUserToken(loggedInUser.uid);
 
       print("Logged in user email: ${loggedInUser.email}");
       print("Logged in user: ${loggedInUser.username}");

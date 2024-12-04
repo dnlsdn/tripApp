@@ -143,7 +143,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Welcome ${user != null ? user.username : 'Guest'}',
+                      'Hi ${user != null ? user.username : 'Guest'}',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 22,

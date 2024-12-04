@@ -4,6 +4,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:travel_app/Controllers/AuthMethods.dart';
+import 'package:travel_app/Controllers/UserMethods.dart';
 import 'package:travel_app/Utils/ImagePicker.dart';
 import 'package:travel_app/Views/HomePage.dart';
 
@@ -23,6 +25,8 @@ class _SignUpViewState extends State<SignUp> {
   bool isShow = false;
   bool isError = false;
   String risultato = '';
+  UserMethods userMethods = UserMethods();
+  AuthMethods authMethods = AuthMethods();
 
   @override
   void dispose() {
@@ -108,6 +112,8 @@ class _SignUpViewState extends State<SignUp> {
           });
 
           risultato = "Registration Completed";
+
+          await authMethods.updateUserToken(user.uid);
 
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(

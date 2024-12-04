@@ -7,7 +7,7 @@ import 'package:travel_app/Views/MessageList.dart';
 
 class Chat extends StatefulWidget {
   final String chatId;
-  final Map<String, dynamic>? profile;
+  final Map<String, dynamic>? profile; // Dati del destinatario della chat
 
   const Chat({super.key, required this.chatId, required this.profile});
 
@@ -21,10 +21,16 @@ class _ChatState extends State<Chat> {
   UserMethods userMethods = UserMethods();
   UserProvider userProvider = UserProvider();
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_controller.text.trim().isNotEmpty) {
-      chatMethods.sendMessage(widget.chatId, _controller.text.trim());
-      _controller.clear();
+      final recipientId = widget.profile?['uid']; // Assumi che il profilo contenga l'ID del destinatario
+
+      if (recipientId != null) {
+        // Invia il messaggio e invia la notifica push
+        await chatMethods.sendMessage(widget.chatId, _controller.text.trim(), recipientId);
+      }
+
+      _controller.clear(); // Pulisce il campo di testo
     }
   }
 
@@ -32,7 +38,7 @@ class _ChatState extends State<Chat> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.profile?['username']),
+        title: Text(widget.profile?['username'] ?? 'Chat'),
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -40,6 +46,7 @@ class _ChatState extends State<Chat> {
               highlightColor: Colors.transparent,
               splashColor: Colors.transparent,
               onTap: () async {
+                // Vai alla pagina del profilo del contatto
                 final profileId = await userMethods
                     .getIdByUsername(widget.profile?['username']);
                 if (profileId != null) {
