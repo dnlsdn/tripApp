@@ -34,6 +34,12 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _fetchPolylines();
+  }
+
   Future<void> _fetchPolylines() async {
     try {
       List<Map<String, dynamic>> polylines =
@@ -71,9 +77,29 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Travels',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+              Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blue, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      highlightColor: Colors.transparent,
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios_new,
+                          color: Colors.white, size: 22),
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  Text(
+                    'Travels',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 27,
+                        color: Colors.white),
+                  ),
+                ],
               ),
               const SizedBox(height: 18),
               Row(
@@ -111,8 +137,7 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
                         itemCount: filteredPolylines.length,
                         itemBuilder: (context, index) {
                           final polyline = filteredPolylines[index];
-                          final title =
-                              polyline['title'] ?? 'err';
+                          final title = polyline['title'] ?? 'err';
 
                           Timestamp timestampFirstDay = polyline['firstDay'];
                           DateTime firstDay = timestampFirstDay.toDate();
@@ -120,32 +145,110 @@ class _StoricoViaggiState extends State<StoricoViaggi> {
                           DateTime lastDay = timestampLastDay.toDate();
 
                           return ListTile(
-                            title: Text(
-                              title,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Column(
+                            contentPadding: EdgeInsets
+                                .zero, // Rimuove il padding esterno del ListTile
+                            title: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  polyline['description'] ??
-                                      'err',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.delete_forever_outlined,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () async {
+                                    final String idToDelete = polyline[
+                                        'id']; // Questo è il valore del campo 'id'
+
+                                    try {
+                                      // Cerca il documento in Firestore con il campo 'id' corrispondente
+                                      QuerySnapshot querySnapshot =
+                                          await FirebaseFirestore.instance
+                                              .collection('polylines')
+                                              .where('id',
+                                                  isEqualTo: idToDelete)
+                                              .get();
+
+                                      if (querySnapshot.docs.isNotEmpty) {
+                                        // Ottieni l'ID del documento Firestore
+                                        String documentId =
+                                            querySnapshot.docs.first.id;
+
+                                        // Elimina il documento
+                                        await FirebaseFirestore.instance
+                                            .collection('polylines')
+                                            .doc(documentId)
+                                            .delete();
+
+                                        // Aggiorna la lista locale
+                                        setState(() {
+                                          filteredPolylines.removeWhere(
+                                              (p) => p['id'] == idToDelete);
+                                          allPolylines.removeWhere(
+                                              (p) => p['id'] == idToDelete);
+                                        });
+
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  'Itinerary deleted successfully')),
+                                        );
+                                      } else {
+                                        // Documento non trovato
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  'No matching document found')),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      // Gestione degli errori
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Failed to delete itinerary: $e')),
+                                      );
+                                    }
+                                  },
+                                  constraints: BoxConstraints(
+                                    minWidth: 18,
+                                    minHeight: 18,
+                                  ),
+                                  padding: EdgeInsets
+                                      .zero, // Rimuove padding interno del pulsante
                                 ),
-                                SizedBox(
-                                  height: 8,
+                                SizedBox(width: 8), // Spazio tra icona e testo
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        title,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        polyline['description'] ?? 'err',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          Text(
+                                              'Start Day\n${DateFormat('dd/MM/yyyy').format(firstDay)}'),
+                                          Spacer(),
+                                          Text(
+                                              'Last Day\n${DateFormat('dd/MM/yyyy').format(lastDay)}'),
+                                        ],
+                                      ),
+                                      Divider(),
+                                    ],
+                                  ),
                                 ),
-                                Row(
-                                  children: [
-                                    Text(
-                                        'Start Day\n${DateFormat('dd/MM/yyyy').format(firstDay)}'),
-                                    Spacer(),
-                                    Text(
-                                        'Last Day\n${DateFormat('dd/MM/yyyy').format(lastDay)}'),
-                                  ],
-                                ),
-                                Divider(),
                               ],
                             ),
                             onTap: () {

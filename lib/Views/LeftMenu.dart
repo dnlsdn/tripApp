@@ -58,7 +58,7 @@ class LeftMenu extends StatelessWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                       builder: (context) => Contacts(
-                            mode: 1,
+                            seeMessages: false,
                           )),
                 );
               },
@@ -70,7 +70,7 @@ class LeftMenu extends StatelessWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                       builder: (context) => Contacts(
-                            mode: 2,
+                            seeMessages: true,
                           )),
                 );
               },

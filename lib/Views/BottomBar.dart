@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:travel_app/Views/Contact.dart';
 import 'package:travel_app/Views/Contacts.dart';
 import 'package:travel_app/Views/HomePage.dart';
 import 'package:travel_app/Views/Settings.dart';
@@ -16,9 +17,11 @@ class BottomBarViewState extends State<BottomBar> {
   int currentTab = 0;
   final List<Widget> screens = [
     HomePage(),
-    StoricoViaggi(),
     Contacts(
-      mode: 0,
+      seeMessages: false,
+    ),
+    Contacts(
+      seeMessages: true,
     ),
     Settings(),
   ];
@@ -30,14 +33,14 @@ class BottomBarViewState extends State<BottomBar> {
 
   List<IconData> listOfIcons = [
     Icons.home_rounded,
-    Icons.explore,
+    Icons.message,
     Icons.group,
     Icons.settings,
   ];
 
   List<String> listOfStrings = [
     'Home',
-    'Travels',
+    'Chat',
     'Contacts',
     'Settings',
   ];
@@ -55,14 +58,18 @@ class BottomBarViewState extends State<BottomBar> {
         break;
       case 1:
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => StoricoViaggi()),
+          MaterialPageRoute(
+            builder: (context) => Contacts(
+              seeMessages: false,
+            ),
+          ),
         );
         break;
       case 0:
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
               builder: (context) => Contacts(
-                    mode: 0,
+                    seeMessages: true,
                   )),
         );
         break;

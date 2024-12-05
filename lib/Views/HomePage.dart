@@ -55,6 +55,7 @@ class _HomePageState extends State<HomePage> {
   Polyline? selectedPolylineDetails;
   Map<String, Map<String, dynamic>> polylineDetails = {};
   List<String> excludeItinerary = [];
+  bool isRefreshButtonEnabled = true;
 
   @override
   void initState() {
@@ -329,19 +330,37 @@ class _HomePageState extends State<HomePage> {
                             duration: Duration(milliseconds: 500),
                             child: Icon(Icons.refresh, color: Colors.white),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              rotationAngle += 1;
-                            });
-                            googleMapsMethods.loadDataTapMarker(markers,
-                                locations, context, null, excludeMarker);
-                            googleMapsMethods.loadPolylinesFromFirestore(
-                              polylines,
-                              markers,
-                              context,
-                              excludeItinerary,
-                            );
-                          },
+                          onPressed: isRefreshButtonEnabled
+                              ? () {
+                                  setState(() {
+                                    isRefreshButtonEnabled =
+                                        false; // Disabilita il pulsante
+                                    rotationAngle += 1;
+                                  });
+
+                                  // Esegui le operazioni di refresh
+                                  googleMapsMethods.loadDataTapMarker(
+                                    markers,
+                                    locations,
+                                    context,
+                                    null,
+                                    excludeMarker,
+                                  );
+                                  googleMapsMethods.loadPolylinesFromFirestore(
+                                    polylines,
+                                    markers,
+                                    context,
+                                    excludeItinerary,
+                                  );
+
+                                  // Riattiva il pulsante dopo 5 secondi
+                                  Timer(Duration(seconds: 5), () {
+                                    setState(() {
+                                      isRefreshButtonEnabled = true;
+                                    });
+                                  });
+                                }
+                              : null,
                         ),
                       ),
                     ),
@@ -396,24 +415,24 @@ class _HomePageState extends State<HomePage> {
                           },
                         ),
                       ),
-                    if (!showPlacesList)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black87,
-                            border: Border.all(color: Colors.blue, width: 2),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: IconButton(
-                            icon: Icon(Icons.menu, color: Colors.white),
-                            onPressed: () {
-                              scaffoldKey.currentState?.openDrawer();
-                            },
-                          ),
-                        ),
-                      ),
+                    // if (!showPlacesList)
+                    //   Positioned(
+                    //     top: 8,
+                    //     left: 8,
+                    //     child: Container(
+                    //       decoration: BoxDecoration(
+                    //         color: Colors.black87,
+                    //         border: Border.all(color: Colors.blue, width: 2),
+                    //         borderRadius: BorderRadius.circular(18),
+                    //       ),
+                    //       child: IconButton(
+                    //         icon: Icon(Icons.menu, color: Colors.white),
+                    //         onPressed: () {
+                    //           scaffoldKey.currentState?.openDrawer();
+                    //         },
+                    //       ),
+                    //     ),
+                    //   ),
                     if (!showPlacesList)
                       Positioned(
                         top: 8,

@@ -8,6 +8,7 @@ import 'package:travel_app/Controllers/GoogleMapsMethods.dart';
 import 'package:travel_app/Controllers/UserMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
 import 'package:travel_app/Views/SignUpLogIn.dart';
+import 'package:travel_app/Views/StoricoViaggi.dart';
 import 'package:travel_app/models/Utente.dart';
 
 class Profile extends StatefulWidget {
@@ -265,6 +266,35 @@ class _ProfileState extends State<Profile> {
                       fontSize: 22),
                 ),
               ),
+            ),
+            Spacer(),
+            Center(
+              child: InkWell(
+                onTap: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StoricoViaggi(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blue, width: 2),
+                      borderRadius: BorderRadius.circular(8)),
+                  child: const Text(
+                    'Travel History',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 18,
             ),
           ],
         ),

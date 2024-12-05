@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:travel_app/Controllers/UserMethods.dart';
 import 'package:travel_app/Controllers/UserProvider.dart';
+import 'package:travel_app/Views/Help.dart';
 import 'package:travel_app/models/Utente.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -258,7 +259,14 @@ class _SettingsState extends State<Settings> {
                         border: Border.all(color: Colors.blue),
                         borderRadius: BorderRadius.circular(68)),
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Help(),
+                          ),
+                        );
+                      },
                       icon: Icon(
                         Icons.description_outlined,
                       ),
