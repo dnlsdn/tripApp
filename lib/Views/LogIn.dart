@@ -22,6 +22,7 @@ class _LogInState extends State<LogIn> {
   bool isError = false;
   bool isLoading = false;
   AuthMethods authMethods = AuthMethods();
+  UserProvider userProvider = UserProvider();
 
   void loginUser() async {
     setState(() {
@@ -94,6 +95,7 @@ class _LogInState extends State<LogIn> {
                 style: TextStyle(color: Colors.white),
               ),
               onPressed: () {
+                userProvider.resetPassword(emailController.text);
                 Navigator.of(context).pop();
               },
             ),

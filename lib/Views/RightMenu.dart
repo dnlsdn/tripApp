@@ -36,7 +36,7 @@ class _RightMenuState extends State<RightMenu> {
 
     switch (widget.mapType) {
       case MapType.normal:
-        stringMap = 'Normal';
+        stringMap = 'Default';
         break;
       case MapType.none:
         break;
@@ -230,10 +230,10 @@ class _RightMenuState extends State<RightMenu> {
                       items: <DropdownMenuItem<MapType>>[
                         DropdownMenuItem(
                           value: MapType.normal,
-                          child: Text('Normal'),
+                          child: Text('Default'),
                           onTap: () {
                             widget.onMapTypeChanged(MapType.normal);
-                            stringMap = 'Normal';
+                            stringMap = 'Default';
                           },
                         ),
                         DropdownMenuItem(

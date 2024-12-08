@@ -316,7 +316,8 @@ class _HomePageState extends State<HomePage> {
                       width: 218,
                     ),
                     Positioned(
-                      bottom: 38,
+                      //bottom: 38,
+                      top: 8,
                       left: 8,
                       child: Container(
                         decoration: BoxDecoration(

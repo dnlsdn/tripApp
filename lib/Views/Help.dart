@@ -11,6 +11,7 @@ class Help extends StatefulWidget {
 class _HelpState extends State<Help> {
   TextEditingController emailController = TextEditingController();
   GeneralMethods generalMethods = GeneralMethods();
+  TextEditingController usernameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -49,11 +50,31 @@ class _HelpState extends State<Help> {
                 height: 32,
               ),
               TextField(
+                controller: usernameController,
+                cursorColor: Colors.white,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  //labelText: 'Enter your infos ',
+                  hintText: 'Enter your infos e.g. username, name, ecc.',
+                  labelStyle: TextStyle(color: Colors.white),
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                      borderRadius: BorderRadius.circular(18)),
+                  filled: true,
+                  fillColor: Colors.black12,
+                ),
+                maxLines: 2,
+              ),
+              SizedBox(
+                height: 18,
+              ),
+              TextField(
                 controller: emailController,
                 cursorColor: Colors.white,
                 style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: 'Insert your name and Write your feedback',
+                  labelText: 'Write your Feedback',
                   labelStyle: TextStyle(color: Colors.white),
                   border: OutlineInputBorder(),
                   focusedBorder: OutlineInputBorder(
@@ -69,7 +90,11 @@ class _HelpState extends State<Help> {
                 child: InkWell(
                   onTap: () async {
                     if (emailController.text.isNotEmpty) {
-                      generalMethods.sendEmail(emailController.text);
+                      generalMethods.sendEmail(
+                        emailController.text,
+                        'help',
+                        usernameController.text,
+                      );
                     }
                   },
                   child: Container(

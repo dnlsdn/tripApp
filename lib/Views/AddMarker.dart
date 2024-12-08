@@ -79,7 +79,7 @@ class _AddMarkerState extends State<AddMarker> {
               // ),
               ListTile(
                 leading: Icon(Icons.cabin, color: Colors.white),
-                title: Text('Place to camp!',
+                title: Text('Camping Spot',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
@@ -95,13 +95,13 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.landscape, color: Colors.white),
-                title: Text('Point of View!',
+                title: Text('Point of Interest',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
                     imageString = 'landscape';
                     markerType = 'landscape';
-                    titleController.text = 'Point of View';
+                    titleController.text = 'Point of Interest';
                   });
                   Navigator.of(context).pop();
                 },
@@ -111,7 +111,7 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.remove_road, color: Colors.white),
-                title: Text('Road Closure!',
+                title: Text('Road Closure',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
@@ -127,7 +127,7 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.engineering, color: Colors.white),
-                title: Text('Construction Work!',
+                title: Text('Construction Work',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
@@ -143,13 +143,13 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.coffee_maker, color: Colors.white),
-                title: Text('Place with potable water!',
+                title: Text('Freshwater Supply',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
                     imageString = 'water';
                     markerType = 'water';
-                    titleController.text = 'Potable Water';
+                    titleController.text = 'Freshwater Supply';
                   });
                   Navigator.of(context).pop();
                 },
@@ -159,13 +159,13 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.restaurant, color: Colors.white),
-                title: Text('Refreshment or Restaurant!',
-                    style: TextStyle(color: Colors.white)),
+                title:
+                    Text('Food Court', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
                     imageString = 'restaurant';
                     markerType = 'restaurant';
-                    titleController.text = 'Refreshment/Restaurant';
+                    titleController.text = 'Food Court';
                   });
                   Navigator.of(context).pop();
                 },
@@ -175,7 +175,7 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.warning, color: Colors.white),
-                title: Text('Place to pay attention!',
+                title: Text('Warning',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
@@ -191,7 +191,7 @@ class _AddMarkerState extends State<AddMarker> {
               ),
               ListTile(
                 leading: Icon(Icons.house, color: Colors.white),
-                title: Text('Place for Accomodation!',
+                title: Text('Accomodation',
                     style: TextStyle(color: Colors.white)),
                 onTap: () {
                   setState(() {
@@ -444,7 +444,7 @@ class _AddMarkerState extends State<AddMarker> {
                   onTap: () => showPicker(context),
                   child: Text(
                       markerType == 'landscape'
-                          ? 'Point of View'
+                          ? 'Point of Interest'
                           : markerType == 'roadClosed'
                               ? 'Road Closure'
                               : markerType == 'restaurant'

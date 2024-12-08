@@ -126,7 +126,7 @@ class _SettingsState extends State<Settings> {
                     width: 8,
                   ),
                   Text(
-                    '5 Stars :)',
+                    'Leave a Review',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,

@@ -11,6 +11,7 @@ class ReportUser extends StatefulWidget {
 class _ReportUserState extends State<ReportUser> {
   TextEditingController emailController = TextEditingController();
   GeneralMethods generalMethods = GeneralMethods();
+  TextEditingController usernameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +50,26 @@ class _ReportUserState extends State<ReportUser> {
                 height: 32,
               ),
               TextField(
+                controller: usernameController,
+                cursorColor: Colors.white,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  //labelText: 'Enter your infos ',
+                  hintText: 'Enter your infos e.g. username, name, ecc.',
+                  labelStyle: TextStyle(color: Colors.white),
+                  border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue),
+                      borderRadius: BorderRadius.circular(18)),
+                  filled: true,
+                  fillColor: Colors.black12,
+                ),
+                maxLines: 2,
+              ),
+              SizedBox(
+                height: 18,
+              ),
+              TextField(
                 controller: emailController,
                 cursorColor: Colors.white,
                 style: TextStyle(color: Colors.white),
@@ -69,7 +90,11 @@ class _ReportUserState extends State<ReportUser> {
                 child: InkWell(
                   onTap: () async {
                     if (emailController.text.isNotEmpty) {
-                      generalMethods.sendEmail(emailController.text);
+                      generalMethods.sendEmail(
+                        emailController.text,
+                        'report',
+                        usernameController.text,
+                      );
                     }
                   },
                   child: Container(
