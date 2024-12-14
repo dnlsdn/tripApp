@@ -52,44 +52,35 @@ class _ProfileState extends State<Profile> {
         source: ImageSource.gallery,
         imageQuality: 85,
         maxWidth: 1080,
-        preferredCameraDevice: CameraDevice.rear,
       );
 
       if (pickedFile != null) {
         final imageFile = File(pickedFile.path);
-        print('Image picked: ${pickedFile.path}');
-        print('Image type: ${pickedFile.mimeType}');
 
-        if (pickedFile.mimeType == 'image/jpeg' ||
-            pickedFile.mimeType == 'image/png' ||
-            pickedFile.mimeType == 'image/jpg') {
-          setState(() {
-            _image = imageFile;
-          });
+        setState(() {
+          _image = imageFile;
+        });
 
-          await Provider.of<UserProvider>(context, listen: false)
-              .uploadProfilePicture(_image!);
+        // Carica l'immagine usando il Provider
+        await Provider.of<UserProvider>(context, listen: false)
+            .uploadProfilePicture(_image!);
+
+        setState(() {
           imageUpdated = true;
-          Future.delayed(const Duration(seconds: 8), () {
-            setState(() {
-              imageUpdated = false;
-            });
+        });
+
+        Future.delayed(const Duration(seconds: 8), () {
+          setState(() {
+            imageUpdated = false;
           });
-        } else {
-          print('Invalid image format: ${pickedFile.mimeType}');
-          errorImage = true;
-          setState(() {});
-          Future.delayed(const Duration(seconds: 8), () {
-            setState(() {
-              errorImage = false;
-            });
-          });
-        }
+        });
       }
     } catch (e) {
-      print('Error: ${e}');
-      errorImage = true;
-      setState(() {});
+      print('Errore durante la selezione o caricamento immagine: $e');
+      setState(() {
+        errorImage = true;
+      });
+
       Future.delayed(const Duration(seconds: 8), () {
         setState(() {
           errorImage = false;
@@ -243,13 +234,14 @@ class _ProfileState extends State<Profile> {
               visible: imageUpdated,
               child: const Padding(
                 padding: EdgeInsets.only(bottom: 18),
-                child: Text(
-                  textAlign: TextAlign.center,
-                  'Image Updated',
-                  style: TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22),
+                child: Center(
+                  child: Text(
+                    'Image Updated',
+                    style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22),
+                  ),
                 ),
               ),
             ),

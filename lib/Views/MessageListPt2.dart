@@ -25,26 +25,6 @@ class _MessageListScreenState extends State<MessageListScreen> {
     final currentUser = Provider.of<UserProvider>(context).getUser;
 
     return Scaffold(
-      // appBar: AppBar(
-      //   leading: const Text(
-      //     'Messages',
-      //     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      //   ),
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.person_add_alt_1),
-      //       onPressed: () {
-      //         // Apri la schermata di ricerca utenti
-      //         Navigator.push(
-      //           context,
-      //           MaterialPageRoute(
-      //             builder: (context) => const SearchUserWithSuggestionsScreen(),
-      //           ),
-      //         );
-      //       },
-      //     ),
-      //   ],
-      // ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -64,7 +44,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                     Expanded(
                       child: TextField(
                         decoration: InputDecoration(
-                          hintText: 'Cerca nella lista chat...',
+                          hintText: 'Search Username',
                           prefixIcon: const Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -123,7 +103,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
 
                     final chatDocs = snapshot.data!.docs;
                     if (chatDocs.isEmpty) {
-                      return const Center(child: Text('Nessuna chat trovata'));
+                      return const Center(child: Text('No Chat Found'));
                     }
 
                     // Filtro locale in base a _searchQuery
@@ -141,7 +121,7 @@ class _MessageListScreenState extends State<MessageListScreen> {
                     }).toList();
 
                     if (filteredChats.isEmpty) {
-                      return const Center(child: Text('Nessuna chat trovata'));
+                      return const Center(child: Text('No Chat Found'));
                     }
 
                     return ListView.builder(
