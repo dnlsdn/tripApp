@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:travel_app/Views/Contact.dart';
 import 'package:travel_app/Views/Contacts.dart';
 import 'package:travel_app/Views/HomePage.dart';
+import 'package:travel_app/Views/MessageList.dart';
 import 'package:travel_app/Views/Settings.dart';
 import 'package:travel_app/Views/StoricoViaggi.dart';
+import 'package:travel_app/Views/MessageListPt2.dart';
 
 class BottomBar extends StatefulWidget {
   const BottomBar({super.key});
@@ -17,9 +19,7 @@ class BottomBarViewState extends State<BottomBar> {
   int currentTab = 0;
   final List<Widget> screens = [
     HomePage(),
-    Contacts(
-      seeMessages: false,
-    ),
+    MessageListScreen(),
     Contacts(
       seeMessages: true,
     ),
@@ -59,9 +59,7 @@ class BottomBarViewState extends State<BottomBar> {
       case 1:
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => Contacts(
-              seeMessages: false,
-            ),
+            builder: (context) => MessageListScreen(),
           ),
         );
         break;

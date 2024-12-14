@@ -15,6 +15,7 @@ import 'package:travel_app/Views/MessageList.dart';
 import 'package:travel_app/Views/ReportUser.dart';
 import 'package:travel_app/Views/StoricoViaggi.dart';
 import 'package:travel_app/Views/StoricoViaggiContact.dart';
+import 'package:travel_app/Views/ChatPt2.dart';
 import 'package:travel_app/models/Utente.dart';
 
 class Contact extends StatefulWidget {

@@ -11,6 +11,7 @@ import 'package:travel_app/Views/AddMarker.dart';
 import 'package:travel_app/Views/Chat.dart';
 import 'package:travel_app/Views/Contact.dart';
 import 'package:travel_app/Views/NewFriend.dart';
+import 'package:travel_app/Views/ChatPt2.dart';
 
 import '../models/Utente.dart';
 
@@ -440,7 +441,7 @@ class _ContactsState extends State<Contacts> {
               MaterialPageRoute(
                 builder: (context) => Chat(
                   chatId: chatId,
-                  profile: profileDetails,
+                  profile: profileDetails!,
                 ),
               ),
             );

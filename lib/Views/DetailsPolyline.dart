@@ -10,6 +10,7 @@ import 'package:travel_app/Controllers/UserProvider.dart';
 import 'package:travel_app/Views/Chat.dart';
 import 'package:travel_app/Views/Contact.dart';
 import 'package:travel_app/Views/DescriptionScreen.dart';
+import 'package:travel_app/Views/ChatPt2.dart';
 import 'package:travel_app/models/Utente.dart';
 
 class DetailsPolyline extends StatefulWidget {
@@ -275,7 +276,7 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
                           MaterialPageRoute(
                             builder: (context) => Chat(
                               chatId: chatId!,
-                              profile: profileDetails,
+                              profile: profileDetails!,
                             ),
                           ),
                         );
@@ -287,7 +288,7 @@ class _DetailsPolylineState extends State<DetailsPolyline> {
                           MaterialPageRoute(
                             builder: (context) => Chat(
                               chatId: chatId!,
-                              profile: profileDetails,
+                              profile: profileDetails!,
                             ),
                           ),
                         );
